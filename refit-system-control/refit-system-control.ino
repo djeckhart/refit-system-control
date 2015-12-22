@@ -28,6 +28,7 @@ unsigned long timeInThisState = 1000;
 
 void setup ()
 {
+  Serial.begin(9600);      // open the serial port at 9600 bps: 
   pinMode (NavigationPin, OUTPUT); // FIXME
   pinMode (StrobesPin, OUTPUT);
 
@@ -47,19 +48,22 @@ void doStateChange ()
       break;
 
     case wantCabin:
-      digitalWrite (CabinPin, HIGH);
-      state = wantStrobes;
-      break;
-
-    case wantStrobes:
-      strobes.on();
+//      digitalWrite (CabinPin, HIGH);
       state = wantNavigation;
       break;
 
     case wantNavigation:
       navigation.on();
+      Serial.print("Want navigation!!");
+      timeInThisState = 6000;
+      state = wantStrobes;
+      break;
+      
+    case wantStrobes:
+      strobes.on();
       state = standby;
       break;
+
     // what next?
   }  // end of switch on state
 }  // end of doStateChange
