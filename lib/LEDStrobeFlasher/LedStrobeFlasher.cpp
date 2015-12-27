@@ -1,7 +1,7 @@
 /*
  Based upon LedFlasher by Nick Gammon
  Date: 23 December 2012
- FEW Modifed Dec 2015 to use analogWrite instead of digitalWrite so the 'off' state will still appear at half brightness.
+ FEW Modifed Dec 2015
 */
 
 #include <LedStrobeFlasher.h>
@@ -13,6 +13,7 @@ LedStrobeFlasher::LedStrobeFlasher (const byte pin, const unsigned long timeOff,
    currentInterval_ = timeOff_;
    startTime_ = 0;
    active_ = active;
+   oscillator_ = false;
    }  // end of LedStrobeFlasher::LedStrobeFlasher
 
 // set pin to output, get current time
@@ -34,15 +35,17 @@ void LedStrobeFlasher::update ()
   // if time to do something, do it
   if (now - startTime_ >= currentInterval_)
     {
-    if (digitalRead (pin_) == LOW)
+    if (oscillator_ == true)
       {
-      digitalWrite(pin_, HIGH);
-      currentInterval_ = timeOn_;
+      analogWrite(pin_, 6);
+      currentInterval_ = timeOff_;
+      oscillator_ = false;
       }
     else
       {
-      analogWrite(pin_, 128);
-      currentInterval_ = timeOff_;
+      digitalWrite(pin_, HIGH);
+      currentInterval_ = timeOn_;
+      oscillator_ = true;
       }
     startTime_ = now;
     } // end of if

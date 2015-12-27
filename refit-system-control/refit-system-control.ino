@@ -63,7 +63,7 @@ void doStateChange ()
     case wantNavigation:
       navigationMarkers.on();
       Serial.print("Starting Navigation Markers.");
-      timeInThisState = 6000;
+      // timeInThisState = 6000;
       shipStatus = wantStrobes;
       break;
 

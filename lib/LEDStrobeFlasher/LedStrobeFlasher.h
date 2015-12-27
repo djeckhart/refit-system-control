@@ -21,8 +21,10 @@ class LedStrobeFlasher
      const unsigned long timeOn_;
 
      bool active_;
+     bool oscillator_;
 
      unsigned long currentInterval_;  // time till we change state
      unsigned long startTime_;        // when we last changed state
+
 
   };  // end of LedStrobeFlasher class
