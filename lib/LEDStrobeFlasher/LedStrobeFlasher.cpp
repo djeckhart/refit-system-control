@@ -1,62 +1,8 @@
 /*
-// Author: Nick Gammon
-// Date: 23 December 2012
 
-Usage:
-
-  LedStrobeFlasher ledName (pin, offtime, ontime, initiallyactive);   // set parameters
-
-  eg.
-
-  LedStrobeFlasher laserTurrent (5, 1000, 2000, true);   // set parameters. pin 5, off for 1000 mS, on for 2000 mS, initially active
-
-  laserTurrent.begin ();    // initialize
-  laserTurrent.on ();       // turn on
-  laserTurrent.off ();      // turn off
-  bool isOn = laserTurrent.isOn ();  // is it currently on?
-
-  laserTurrent.update ();   // call in loop function
-
-
-    EXAMPLE CODE
-
-
-      #include <LedStrobeFlasher.h>
-
-      // set up some LEDs
-      LedStrobeFlasher floodLight (8, 200, 300);
-      LedStrobeFlasher shuttleBayDoors (9, 300, 600);
-      LedStrobeFlasher impuleEngine (10, 900, 100);
-      LedStrobeFlasher strobe (11, 500, 1000);
-      LedStrobeFlasher navigation (12, 1000, 2000);
-      LedStrobeFlasher torpedoes (13, 250, 500);
-
-      void setup()
-        {
-        floodLight.begin ();
-        shuttleBayDoors.begin ();
-        impuleEngine.begin ();
-        strobe.begin ();
-        navigation.begin ();
-        torpedoes.begin ();
-        }  // end of setup
-
-      void loop()
-        {
-        // update lights
-        floodLight.update ();
-        shuttleBayDoors.update ();
-        impuleEngine.update ();
-        strobe.update ();
-        navigation.update ();
-        torpedoes.update ();
-
-
-        // do other useful stuff here ...
-
-
-        }  // end of loop
-
+ Based upon LedFlasher by Nick Gammon
+ Date: 23 December 2012
+ FEW Modifed Dec 2015 to use analogWrite instead of digitalWrite so the 'off' state will still appear at half brightness.
 */
 
 #include <LedStrobeFlasher.h>
@@ -96,7 +42,7 @@ void LedStrobeFlasher::update ()
       }
     else
       {
-      digitalWrite(pin_, LOW);
+      analogWrite(pin_, 128);
       currentInterval_ = timeOff_;
       }
     startTime_ = now;
