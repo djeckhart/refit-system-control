@@ -1,71 +1,79 @@
 #include <LedFlasher.h>
-
-// The Enterprise
-
+#include <LedStrobeFlasher.h>
+#include <Adafruit_NeoPixel.h>
+/*
+ Refit System Control
+ Author: Frankie Winters
+ License: WTFPL
+ **Startup Schedule**
+ - Mains, Life Support: ON
+ - navigationMarkers Markers: ON
+ - Deflector and Impulse Crystal: Fade to Amber
+ - Strobes: ON
+ **Warp**
+ - Deflector and Impulse Crystal: Fade to Aqua
+ - Warp Nacelle Flux Chiller Grills: ON
+ **Impulse**
+ - Deflector and Impulse Crystal: Fade to Aqua
+ - Warp Nacelle Flux Chiller Grills: OFF
+ - Impulse Exhaust: ON
+*/
 // pin assignments
 const byte StrobesPin = 10; // PWM
 const byte NavigationPin = 9;
-const byte CabinPin = 1;
 
-// Flashers                pin          off-time  on-time       on?
-LedFlasher strobes    (StrobesPin,        900,       100,     false);
-LedFlasher navigation (NavigationPin,     3000,     1000,     false);
+// Flashers                    pin          off-time  on-time       on?
+LedStrobeFlasher strobes     (StrobesPin,        900,       100,     false);
+LedFlasher navigationMarkers (NavigationPin,     3000,     1000,     false);
 
-// states for the state machine
+// states for the finite stae machine
 typedef enum
 {
   initialState,
-  wantCabin,                 // ALWAYS ON
-  wantNavigation,            // ALWAYS ON
-  wantStrobes,               // ALWAYS ON
+  wantNavigation,
+  wantStrobes,
   standby
 } states;
 
-// state machine variables
-states state = initialState;
+// shipStatus machine variables
+states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
 
 void setup ()
 {
-  Serial.begin(9600);      // open the serial port at 9600 bps: 
-  pinMode (NavigationPin, OUTPUT); // FIXME
+  Serial.begin(9600);
+  pinMode (NavigationPin, OUTPUT);
   pinMode (StrobesPin, OUTPUT);
-
   strobes.begin ();
-  navigation.begin ();
-}  // end of setup
+  navigationMarkers.begin ();
+}
 
 void doStateChange ()
 {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
 
-  switch (state)
+  switch (shipStatus)
   {
     case initialState:
-      state = wantCabin;
-      break;
-
-    case wantCabin:
-//      digitalWrite (CabinPin, HIGH);
-      state = wantNavigation;
+      shipStatus = wantNavigation;
       break;
 
     case wantNavigation:
-      navigation.on();
-      Serial.print("Want navigation!!");
+      navigationMarkers.on();
+      Serial.print("Starting Navigation Markers.");
       timeInThisState = 6000;
-      state = wantStrobes;
+      shipStatus = wantStrobes;
       break;
-      
+
     case wantStrobes:
       strobes.on();
-      state = standby;
+      shipStatus = standby;
       break;
 
     // what next?
-  }  // end of switch on state
+  }  // end of switch on shipStatus
 }  // end of doStateChange
 
 void loop ()
@@ -73,7 +81,7 @@ void loop ()
   if (millis () - lastStateChange >= timeInThisState)
     doStateChange ();
   // update faders, flashers
-  navigation.update ();
+  navigationMarkers.update ();
   strobes.update ();
   // other stuff here like testing switches
 }  // end of loop
