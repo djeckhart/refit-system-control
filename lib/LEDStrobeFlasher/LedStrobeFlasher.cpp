@@ -1,5 +1,4 @@
 /*
-
  Based upon LedFlasher by Nick Gammon
  Date: 23 December 2012
  FEW Modifed Dec 2015 to use analogWrite instead of digitalWrite so the 'off' state will still appear at half brightness.
