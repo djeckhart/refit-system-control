@@ -26,25 +26,15 @@ const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will
                           // pull the pin to ground momentarily.  On a high -> low
                           // transition the button press logic will execute.
 const byte WarpDrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
+const byte WarpDrivetrainPixelCount = 3;
 
-#define PIXEL_COUNT 3
-
-// Parameter 1 = number of pixels in warpDrivetrain,  neopixel stick has 8
-// Parameter 2 = pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_RGB     Pixels are wired for RGB bitstream
-//   NEO_GRB     Pixels are wired for GRB bitstream, correct for neopixel stick
-//   NEO_KHZ400  400 KHz bitstream (e.g. FLORA pixels)
-//   NEO_KHZ800  800 KHz bitstream (e.g. High Density LED warpDrivetrain), correct for neopixel stick
-Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(PIXEL_COUNT, WarpDrivetrainPin, NEO_GRB);
-
-// Flashers                    pin          on-time,  off-time, on?
-LedStrobeFlasher strobes     (StrobesPin,   100, 900, true);
-LedFlasher navigationMarkers (NavigationPin, 1000, 3000, true);
+// Construt a few utilites
+Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_GRB);
+LedStrobeFlasher strobes(StrobesPin,   100, 900, true);
+LedFlasher navigationMarkers(NavigationPin, 1000, 3000, true);
 
   // states for the finite stae machine
-typedef enum
-{
+typedef enum {
   initialState,
   wantNavigation,
   wantStrobes,
@@ -57,7 +47,6 @@ unsigned long timeInThisState = 1000;
 void doStateChange () {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
-
   switch (shipStatus)
   {
     case initialState:
