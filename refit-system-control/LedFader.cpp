@@ -47,7 +47,7 @@ Usage:
 
 */
 
-#include <LedFader.h>
+#include "LedFader.h"
 
 // constructor
 LedFader::LedFader (const byte pin,
@@ -72,7 +72,7 @@ void LedFader::begin ()
   digitalWrite (pin_, LOW);
   startTime_ = millis ();
   }  // end of LedFader::begin
-  // 
+  //
 // call from loop to flash the LED
 void LedFader::update ()
   {

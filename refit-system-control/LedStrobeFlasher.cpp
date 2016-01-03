@@ -4,7 +4,7 @@
  FEW Modifed Dec 2015
 */
 
-#include <LedStrobeFlasher.h>
+#include "LedStrobeFlasher.h"
 
 // constructor
 LedStrobeFlasher::LedStrobeFlasher (const byte pin, const unsigned long timeOff, const unsigned long timeOn, const bool active) :

@@ -1,6 +1,6 @@
-#include <LedFlasher.h>
-#include <LedStrobeFlasher.h>
-#include <Adafruit_NeoPixel.h>
+#include "LedFlasher.h"
+#include "LedStrobeFlasher.h"
+#include "Adafruit_NeoPatterns.h"
 /*
  Refit System Control
  Author: Frankie Winters
