@@ -25,7 +25,6 @@ const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will
                           // driven with a pull-up resistor so the switch should
                           // pull the pin to ground momentarily.  On a high -> low
                           // transition the button press logic will execute.
-
 const byte WarpDrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
 
 #define PIXEL_COUNT 3
@@ -43,7 +42,7 @@ Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(PIXEL_COUNT, WarpDrivetrain
 LedStrobeFlasher strobes     (StrobesPin,   100, 900, true);
 LedFlasher navigationMarkers (NavigationPin, 1000, 3000, true);
 
-// states for the finite stae machine
+  // states for the finite stae machine
 typedef enum
 {
   initialState,
@@ -52,15 +51,10 @@ typedef enum
   wantWarp,
   standby
 } states;
-
-// shipStatus machine variables
 states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
-
-
-void doStateChange ()
-{
+void doStateChange () {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
 
@@ -72,6 +66,7 @@ void doStateChange ()
 
     case wantNavigation:
       navigationMarkers.on();
+      timeInThisState = 3000;
       shipStatus = wantStrobes;
       break;
 
@@ -90,8 +85,7 @@ void doStateChange ()
   }  // end of switch on shipStatus
 }  // end of doStateChange
 
-void advanceState()
-{
+void advanceState() {
    switch (shipStatus)
    {
       case wantWarp:
@@ -110,7 +104,7 @@ void advanceState()
 }
 
 void impulsePower() {
-  warpDrivetrain.setPixelColor(0, 247, 200, 84);
+  warpDrivetrain.setPixelColor(0, 125, 100, 41);
   warpDrivetrain.setPixelColor(1, 248, 7, 4);
   warpDrivetrain.setPixelColor(2, 248, 7, 4);
   warpDrivetrain.show();
@@ -164,5 +158,5 @@ void loop ()
   // update faders, flashers
   navigationMarkers.update ();
   strobes.update ();
-
+  readButton();
 }  // end of loop
