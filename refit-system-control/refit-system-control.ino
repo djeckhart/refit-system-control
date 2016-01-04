@@ -1,6 +1,7 @@
 #include "LedFlasher.h"
 #include "LedStrobeFlasher.h"
-#include "Adafruit_NeoPatterns.h"
+#include "Adafruit_NeoPixel.h"
+#include "NeoPixel_Animator.h"
 /*
  Refit System Control
  Author: Frankie Winters
@@ -28,8 +29,13 @@ const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will
 const byte WarpDrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
 const byte WarpDrivetrainPixelCount = 3;
 
-// Construt a few utilites
+// A Neopixel Object to manage the series of lights that represent the warp drive
 Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_GRB);
+// Animators to run the effects of each compnent
+NeoPixel_Animator impulseCrystal = NeoPixel_Animator(warpDrivetrain, 0, 1, NULL);
+NeoPixel_Animator impulseExhausts = NeoPixel_Animator(warpDrivetrain, 1, 2, NULL);
+NeoPixel_Animator deflectorDish = NeoPixel_Animator(warpDrivetrain, 3, 1, NULL);
+
 LedStrobeFlasher strobes(StrobesPin,   100, 900, true);
 LedFlasher navigationMarkers(NavigationPin, 1000, 3000, true);
 
@@ -44,6 +50,7 @@ typedef enum {
 states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
+
 void doStateChange () {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
@@ -107,6 +114,7 @@ void warpPower() {
 }
 
 bool lastButtonState = HIGH;
+
 void readButton() {
 
     // Get current button state.
