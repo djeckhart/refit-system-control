@@ -1,8 +1,11 @@
 #include "NeoPixel_Animator.h"
 
 // Constructor - calls base-class constructor to initialize strip
-NeoPixel_Animator::NeoPixel_Animator(Adafruit_NeoPixel strip, uint16_t pixelIndex, uint16_t pixelCount, void (*callback)())
+NeoPixel_Animator::NeoPixel_Animator(Adafruit_NeoPixel pixelStrip, uint16_t pixelIndex, uint16_t pixelCount, void (*callback)())
 {
+    strip = pixelStrip;
+    PixelIndex = pixelIndex;
+    PixelCount = pixelCount;
     OnComplete = callback;
 }
 
@@ -50,25 +53,6 @@ void NeoPixel_Animator::Reverse()
     }
 }
 
-// These stubs replace the former parent class
-int numPixels() { return 0; }
-void setPixelColor(int pixel, uint32_t color) { }
-uint32_t getPixelColor(int pixel) { return 0; }
-void show() { }
-// Convert separate R,G,B into packed 32-bit RGB color.
-// Packed format is always RGB, regardless of LED strand color order.
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b) {
-  return ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
-}
-
-// Convert separate R,G,B,W into packed 32-bit WRGB color.
-// Packed format is always WRGB, regardless of LED strand color order.
-uint32_t Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-  return ((uint32_t)w << 24) | ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b;
-}
-
-
-
 // Initialize for a RainbowCycle
 void NeoPixel_Animator::RainbowCycle(uint8_t interval, direction dir = FORWARD)
 {
@@ -82,11 +66,11 @@ void NeoPixel_Animator::RainbowCycle(uint8_t interval, direction dir = FORWARD)
 // Update the Rainbow Cycle Pattern
 void NeoPixel_Animator::RainbowCycleUpdate()
 {
-    for(int i=0; i< numPixels(); i++)
+    for(int i=0; i< PixelCount; i++)
     {
-        setPixelColor(i, Wheel(((i * 256 / numPixels()) + Index) & 255));
+        strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + Index) & 255));
     }
-    show();
+    strip.show();
     Increment();
 }
 
@@ -95,7 +79,7 @@ void NeoPixel_Animator::TheaterChase(uint32_t color1, uint32_t color2, uint8_t i
 {
     ActivePattern = THEATER_CHASE;
     Interval = interval;
-    TotalSteps = numPixels();
+    TotalSteps = PixelCount;
     Color1 = color1;
     Color2 = color2;
     Index = 0;
@@ -105,18 +89,18 @@ void NeoPixel_Animator::TheaterChase(uint32_t color1, uint32_t color2, uint8_t i
 // Update the Theater Chase Pattern
 void NeoPixel_Animator::TheaterChaseUpdate()
 {
-    for(int i=0; i< numPixels(); i++)
+    for(int i = 0; i < strip.numPixels(); i++)
     {
         if ((i + Index) % 3 == 0)
         {
-            setPixelColor(i, Color1);
+            strip.setPixelColor(i, Color1);
         }
         else
         {
-            setPixelColor(i, Color2);
+            strip.setPixelColor(i, Color2);
         }
     }
-    show();
+    strip.show();
     Increment();
 }
 
@@ -125,7 +109,7 @@ void NeoPixel_Animator::ColorWipe(uint32_t color, uint8_t interval, direction di
 {
     ActivePattern = COLOR_WIPE;
     Interval = interval;
-    TotalSteps = numPixels();
+    TotalSteps = PixelCount;
     Color1 = color;
     Index = 0;
     Direction = dir;
@@ -134,8 +118,8 @@ void NeoPixel_Animator::ColorWipe(uint32_t color, uint8_t interval, direction di
 // Update the Color Wipe Pattern
 void NeoPixel_Animator::ColorWipeUpdate()
 {
-    setPixelColor(Index, Color1);
-    show();
+    strip.setPixelColor(Index, Color1);
+    strip.show();
     Increment();
 }
 
@@ -144,7 +128,7 @@ void NeoPixel_Animator::Scanner(uint32_t color1, uint8_t interval)
 {
     ActivePattern = SCANNER;
     Interval = interval;
-    TotalSteps = (numPixels() - 1) * 2;
+    TotalSteps = (strip.numPixels() - 1) * 2;
     Color1 = color1;
     Index = 0;
 }
@@ -152,22 +136,22 @@ void NeoPixel_Animator::Scanner(uint32_t color1, uint8_t interval)
 // Update the Scanner Pattern
 void NeoPixel_Animator::ScannerUpdate()
 {
-    for (int i = 0; i < numPixels(); i++)
+    for (int i = 0; i < PixelCount; i++)
     {
         if (i == Index)  // Scan Pixel to the right
         {
-             setPixelColor(i, Color1);
+             strip.setPixelColor(i+PixelCount, Color1);
         }
         else if (i == TotalSteps - Index) // Scan Pixel to the left
         {
-             setPixelColor(i, Color1);
+             strip.setPixelColor(i+PixelCount, Color1);
         }
         else // Fading tail
         {
-             setPixelColor(i, DimColor(getPixelColor(i)));
+             strip.setPixelColor(i+PixelCount, DimColor(strip.getPixelColor(i)));
         }
     }
-    show();
+    strip.show();
     Increment();
 }
 
@@ -192,8 +176,8 @@ void NeoPixel_Animator::FadeUpdate()
     uint8_t green = ((Green(Color1) * (TotalSteps - Index)) + (Green(Color2) * Index)) / TotalSteps;
     uint8_t blue = ((Blue(Color1) * (TotalSteps - Index)) + (Blue(Color2) * Index)) / TotalSteps;
 
-    ColorSet(Color(red, green, blue));
-    show();
+    ColorSet(strip.Color(red, green, blue));
+    strip.show();
     Increment();
 }
 
@@ -201,18 +185,18 @@ void NeoPixel_Animator::FadeUpdate()
 uint32_t NeoPixel_Animator::DimColor(uint32_t color)
 {
     // Shift R, G and B components one bit to the right
-    uint32_t dimColor = Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
+    uint32_t dimColor = strip.Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
     return dimColor;
 }
 
 // Set all pixels to a color (synchronously)
 void NeoPixel_Animator::ColorSet(uint32_t color)
 {
-    for (int i = 0; i < numPixels(); i++)
+    for (int i = 0; i < PixelCount; i++)
     {
-        setPixelColor(i, color);
+        strip.setPixelColor(i+PixelIndex, color);
     }
-    show();
+    strip.show();
 }
 
 // Returns the Red component of a 32-bit color
@@ -240,17 +224,17 @@ uint32_t NeoPixel_Animator::Wheel(byte WheelPos)
     WheelPos = 255 - WheelPos;
     if(WheelPos < 85)
     {
-        return Color(255 - WheelPos * 3, 0, WheelPos * 3);
+        return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
     }
     else if(WheelPos < 170)
     {
         WheelPos -= 85;
-        return Color(0, WheelPos * 3, 255 - WheelPos * 3);
+        return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
     }
     else
     {
         WheelPos -= 170;
-        return Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+        return (WheelPos * 3, 255 - WheelPos * 3, 0);
     }
 }
 

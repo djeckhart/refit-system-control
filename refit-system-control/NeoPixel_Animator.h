@@ -11,9 +11,12 @@ enum  direction { FORWARD, REVERSE };
 class NeoPixel_Animator
 {
   public:
-    NeoPixel_Animator(Adafruit_NeoPixel strip, uint16_t pixelIndex, uint16_t pixelCount, void (*callback)());
+    NeoPixel_Animator(Adafruit_NeoPixel pixelStrip, uint16_t pixelIndex, uint16_t pixelCount, void (*callback)());
 
     // Member Variables:
+    Adafruit_NeoPixel strip; //  host strip
+    uint32_t PixelIndex, PixelCount;  // the range of pixels in the host strip
+
     pattern  ActivePattern;  // which pattern is running
     direction Direction;     // direction to run the pattern
 

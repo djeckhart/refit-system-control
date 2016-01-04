@@ -32,7 +32,7 @@ const byte WarpDrivetrainPixelCount = 3;
 // A Neopixel Object to manage the series of lights that represent the warp drive
 Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_GRB);
 // Animators to run the effects of each compnent
-NeoPixel_Animator impulseCrystal = NeoPixel_Animator(warpDrivetrain, 0, 1, NULL);
+NeoPixel_Animator ImpulseCrystal(warpDrivetrain, 0, 1, NULL);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(warpDrivetrain, 1, 2, NULL);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(warpDrivetrain, 3, 1, NULL);
 
@@ -100,7 +100,10 @@ void advanceState() {
 }
 
 void impulsePower() {
-  warpDrivetrain.setPixelColor(0, 125, 100, 41);
+
+  // ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
+  //  warpDrivetrain.Color(125, 100, 41), 500, 50, FORWARD);
+  // warpDrivetrain.setPixelColor(0, 125, 100, 41);
   warpDrivetrain.setPixelColor(1, 248, 7, 4);
   warpDrivetrain.setPixelColor(2, 248, 7, 4);
   warpDrivetrain.show();
@@ -155,5 +158,6 @@ void loop ()
   // update faders, flashers
   navigationMarkers.update ();
   strobes.update ();
+  ImpulseCrystal.Update();
   readButton();
 }  // end of loop
