@@ -7,7 +7,7 @@ NeoPixel_Animator::NeoPixel_Animator(Adafruit_NeoPixel pixelStrip, uint16_t pixe
     PixelIndex = pixelIndex;
     PixelCount = pixelCount;
     OnComplete = callback;
-}
+  }
 
 // Increment the Index and reset at the end
 void NeoPixel_Animator::Increment()
@@ -41,16 +41,16 @@ void NeoPixel_Animator::Increment()
 // Reverse pattern direction
 void NeoPixel_Animator::Reverse()
 {
-    if (Direction == FORWARD)
-    {
-        Direction = REVERSE;
-        Index = TotalSteps-1;
-    }
-    else
-    {
-        Direction = FORWARD;
-        Index = 0;
-    }
+    // if (Direction == FORWARD)
+    // {
+    //     Direction = REVERSE;
+    //     Index = TotalSteps-1;
+    // }
+    // else
+    // {
+    //     Direction = FORWARD;
+    //     Index = 0;
+    // }
 }
 
 // Initialize for a RainbowCycle
@@ -172,12 +172,15 @@ void NeoPixel_Animator::FadeUpdate()
 {
     // Calculate linear interpolation between Color1 and Color2
     // Optimise order of operations to minimize truncation error
-    uint8_t red = ((Red(Color1) * (TotalSteps - Index)) + (Red(Color2) * Index)) / TotalSteps;
-    uint8_t green = ((Green(Color1) * (TotalSteps - Index)) + (Green(Color2) * Index)) / TotalSteps;
-    uint8_t blue = ((Blue(Color1) * (TotalSteps - Index)) + (Blue(Color2) * Index)) / TotalSteps;
+    uint8_t redComponent = ((Red(Color1) * (TotalSteps - Index)) + (Red(Color2) * Index)) / TotalSteps;
+    uint8_t greenComponent = ((Green(Color1) * (TotalSteps - Index)) + (Green(Color2) * Index)) / TotalSteps;
+    uint8_t blueComponent = ((Blue(Color1) * (TotalSteps - Index)) + (Blue(Color2) * Index)) / TotalSteps;
 
-    ColorSet(strip.Color(red, green, blue));
-    strip.show();
+    ColorSet(strip.Color(redComponent, greenComponent, blueComponent));
+    // strip.show();
+    if (Index >= TotalSteps) {
+      Serial.println("Waht am I doing?");
+    }
     Increment();
 }
 
@@ -194,24 +197,24 @@ void NeoPixel_Animator::ColorSet(uint32_t color)
 {
     for (int i = 0; i < PixelCount; i++)
     {
-        strip.setPixelColor(i+PixelIndex, color);
+        strip.setPixelColor(PixelIndex+i, color);
     }
-    strip.show();
+    // strip.show();
 }
 
-// Returns the Red component of a 32-bit color
+// Returns the Red-component of a 32-bit color
 uint8_t NeoPixel_Animator::Red(uint32_t color)
 {
     return (color >> 16) & 0xFF;
 }
 
-// Returns the Green component of a 32-bit color
+// Returns the Green-component of a 32-bit color
 uint8_t NeoPixel_Animator::Green(uint32_t color)
 {
     return (color >> 8) & 0xFF;
 }
 
-// Returns the Blue component of a 32-bit color
+// Returns the Blue-component of a 32-bit color
 uint8_t NeoPixel_Animator::Blue(uint32_t color)
 {
     return color & 0xFF;

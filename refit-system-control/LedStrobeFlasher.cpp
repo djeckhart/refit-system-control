@@ -43,7 +43,7 @@ void LedStrobeFlasher::update ()
       }
     else
       {
-      analogWrite(pin_, 240);
+      analogWrite(pin_, 250);
       currentInterval_ = timeOn_;
       oscillator_ = true;
       }

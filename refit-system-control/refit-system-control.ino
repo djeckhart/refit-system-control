@@ -32,25 +32,32 @@ const byte WarpDrivetrainPixelCount = 3;
 // A Neopixel Object to manage the series of lights that represent the warp drive
 Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_GRB);
 // Animators to run the effects of each compnent
-NeoPixel_Animator ImpulseCrystal(warpDrivetrain, 0, 1, NULL);
-NeoPixel_Animator impulseExhausts = NeoPixel_Animator(warpDrivetrain, 1, 2, NULL);
-NeoPixel_Animator deflectorDish = NeoPixel_Animator(warpDrivetrain, 3, 1, NULL);
+NeoPixel_Animator ImpulseCrystal(warpDrivetrain, 0, 1, &ImpulseCrystalComplete);
+NeoPixel_Animator ImpulseExhausts(warpDrivetrain, 1, 2, &ImpulseExhaustsComplete);
+// NeoPixel_Animator deflectorDish = NeoPixel_Animator(warpDrivetrain, 3, 1, NULL);
 
 LedStrobeFlasher strobes(StrobesPin,   100, 900, true);
 LedFlasher navigationMarkers(NavigationPin, 1000, 3000, true);
+
+// Colors
+uint32_t black = warpDrivetrain.Color(0,0,0);
+uint32_t lightYellow = warpDrivetrain.Color(85, 160, 160);
+uint32_t red = warpDrivetrain.Color(248, 7, 4);
+uint32_t turquoise = warpDrivetrain.Color(0, 155, 185);
 
   // states for the finite stae machine
 typedef enum {
   initialState,
   wantNavigation,
   wantStrobes,
+  wantImpulse,
   wantWarp,
   standby
 } states;
 states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
-
+bool canSheTakeAnyMore = true;
 void doStateChange () {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
@@ -68,52 +75,88 @@ void doStateChange () {
 
     case wantStrobes:
       strobes.on();
-      shipStatus = standby;
+      beginMatterAntimatterReaction();
+      shipStatus = wantImpulse;
       break;
 
     case wantWarp:
       warpPower();
+      shipStatus = standby;
+      break;
+
+    case wantImpulse:
+      impulsePower();
+      shipStatus = standby;
       break;
 
     case standby:
-      impulsePower();
+      //impulsePower();
       break;
   }  // end of switch on shipStatus
 }  // end of doStateChange
 
-void advanceState() {
-   switch (shipStatus)
-   {
-      case wantWarp:
-      shipStatus = standby;
-        break;
-
-      case standby:
-      shipStatus = wantWarp;
-          break;
-
-      default:
-      // shipStatus = standby;
-        break;
-   }
+void advanceState()
+{
+  Serial.println("advance state");
+  if (canSheTakeAnyMore == true) {
+    shipStatus = wantWarp;
+  } else {
+    shipStatus = wantImpulse;
+  }
    doStateChange();
+   canSheTakeAnyMore = !canSheTakeAnyMore;
 }
 
-void impulsePower() {
-
-  // ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
-  //  warpDrivetrain.Color(125, 100, 41), 500, 50, FORWARD);
-  // warpDrivetrain.setPixelColor(0, 125, 100, 41);
-  warpDrivetrain.setPixelColor(1, 248, 7, 4);
-  warpDrivetrain.setPixelColor(2, 248, 7, 4);
-  warpDrivetrain.show();
+void beginMatterAntimatterReaction()
+{
+  ImpulseCrystal.Fade(black,
+                      lightYellow,
+                      255,
+                      10,
+                      FORWARD);
 }
 
-void warpPower() {
-  warpDrivetrain.setPixelColor(0, 0, 155, 184);
-  warpDrivetrain.setPixelColor(1, 0, 0, 0);
-  warpDrivetrain.setPixelColor(2, 0, 0, 0);
-  warpDrivetrain.show();
+void impulsePower()
+{
+  Serial.println("Impulse engines engaged, Captain.");
+  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
+                      lightYellow,
+                      255,
+                      10,
+                      FORWARD);
+  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(1),
+                      red,
+                      155,
+                      10,
+                      FORWARD);
+}
+
+void ImpulseCrystalComplete()
+{
+    // Serial.println("ImpulseCrystalComplete()");
+    ImpulseCrystal.ActivePattern = NONE;
+}
+
+void ImpulseExhaustsComplete()
+{
+  // Serial.println("ImpulseExhaustsComplete()");
+  ImpulseExhausts.ActivePattern = NONE;
+}
+
+void warpPower()
+{
+  Serial.println("Warp speed at your command.");;
+  // warpDrivetrain.setPixelColor(0, 0, 155, 184);
+  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
+                       turquoise,
+                       155,
+                       10,
+                      FORWARD);
+  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(1),
+                      black,
+                      155,
+                      10,
+                      FORWARD);
 }
 
 bool lastButtonState = HIGH;
@@ -146,7 +189,7 @@ void setup ()
   strobes.begin ();
   navigationMarkers.begin ();
   warpDrivetrain.begin();
-  warpDrivetrain.show(); // Initialize all pixels to 'off'
+  // warpDrivetrain.show(); // Initialize all pixels to 'off'
 }
 
 void loop ()
@@ -156,8 +199,10 @@ void loop ()
     doStateChange ();
   }
   // update faders, flashers
+  readButton();
   navigationMarkers.update ();
   strobes.update ();
   ImpulseCrystal.Update();
-  readButton();
+  ImpulseExhausts.Update();
+  warpDrivetrain.show();
 }  // end of loop
