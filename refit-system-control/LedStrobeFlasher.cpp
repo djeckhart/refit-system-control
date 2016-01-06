@@ -28,8 +28,10 @@ void LedStrobeFlasher::begin ()
 void LedStrobeFlasher::update ()
   {
   // do nothing if not active
-  if (!active_)
+  if (!active_) {
+    analogWrite(pin_, 255);
     return;
+  }
 
   unsigned long now = millis ();
   // if time to do something, do it

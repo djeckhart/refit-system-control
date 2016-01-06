@@ -82,8 +82,10 @@ void LedFlasher::begin ()
 void LedFlasher::update ()
   {
   // do nothing if not active
-  if (!active_)
+  if (!active_) {
+    digitalWrite(pin_, HIGH);
     return;
+  }
 
   unsigned long now = millis ();
   // if time to do something, do it
