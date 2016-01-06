@@ -43,8 +43,8 @@ LedFlasher navigationMarkers(NavigationPin, 1000, 3000, false);
 
 // Colors
 uint32_t black = warpDrivetrain.Color(0,0,0);
-uint32_t impulseWhite = warpDrivetrain.Color(240, 255, 60);
-uint32_t red = warpDrivetrain.Color(7, 248, 4);
+uint32_t impulseWhite = warpDrivetrain.Color(240, 255, 0);
+uint32_t red = warpDrivetrain.Color(20, 248, 0);
 uint32_t turquoise = warpDrivetrain.Color(128, 0, 153);
 
   // states for the finite stae machine
