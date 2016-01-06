@@ -30,20 +30,22 @@ const byte WarpDrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
 const byte WarpDrivetrainPixelCount = 3;
 
 // A Neopixel Object to manage the series of lights that represent the warp drive
-Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_GRB);
+Adafruit_NeoPixel warpDrivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
 // Animators to run the effects of each compnent
-NeoPixel_Animator ImpulseCrystal(warpDrivetrain, 0, 1, &ImpulseCrystalComplete);
-NeoPixel_Animator ImpulseExhausts(warpDrivetrain, 1, 2, &ImpulseExhaustsComplete);
+const byte ImpulseCrystalPixel = 0;
+const byte ImpulseExhaustsPixel = 1;
+NeoPixel_Animator ImpulseCrystal = NeoPixel_Animator(warpDrivetrain, ImpulseCrystalPixel, 1, &ImpulseCrystalComplete);
+NeoPixel_Animator ImpulseExhausts = NeoPixel_Animator(warpDrivetrain, ImpulseExhaustsPixel, 2, &ImpulseExhaustsComplete);
 // NeoPixel_Animator deflectorDish = NeoPixel_Animator(warpDrivetrain, 3, 1, NULL);
 
-LedStrobeFlasher strobes(StrobesPin,   100, 900, true);
-LedFlasher navigationMarkers(NavigationPin, 1000, 3000, true);
+LedStrobeFlasher strobes(StrobesPin,   100, 900, false);
+LedFlasher navigationMarkers(NavigationPin, 1000, 3000, false);
 
 // Colors
 uint32_t black = warpDrivetrain.Color(0,0,0);
-uint32_t lightYellow = warpDrivetrain.Color(85, 160, 160);
-uint32_t red = warpDrivetrain.Color(248, 7, 4);
-uint32_t turquoise = warpDrivetrain.Color(0, 155, 185);
+uint32_t impulseWhite = warpDrivetrain.Color(240, 255, 60);
+uint32_t red = warpDrivetrain.Color(7, 248, 4);
+uint32_t turquoise = warpDrivetrain.Color(128, 0, 153);
 
   // states for the finite stae machine
 typedef enum {
@@ -57,26 +59,27 @@ typedef enum {
 states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
-bool canSheTakeAnyMore = true;
+bool canSheTakeAnyMore = false; // which is to say we start in impulse mode
 void doStateChange () {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
   switch (shipStatus)
   {
     case initialState:
+      beginMatterAntimatterReaction();
+      timeInThisState = 2000;
       shipStatus = wantNavigation;
       break;
 
     case wantNavigation:
       navigationMarkers.on();
-      timeInThisState = 3000;
+      timeInThisState = 2000;
       shipStatus = wantStrobes;
       break;
 
     case wantStrobes:
       strobes.on();
-      beginMatterAntimatterReaction();
-      shipStatus = wantImpulse;
+      shipStatus = standby;
       break;
 
     case wantWarp:
@@ -97,7 +100,6 @@ void doStateChange () {
 
 void advanceState()
 {
-  Serial.println("advance state");
   if (canSheTakeAnyMore == true) {
     shipStatus = wantWarp;
   } else {
@@ -110,7 +112,7 @@ void advanceState()
 void beginMatterAntimatterReaction()
 {
   ImpulseCrystal.Fade(black,
-                      lightYellow,
+                      impulseWhite,
                       255,
                       10,
                       FORWARD);
@@ -118,17 +120,19 @@ void beginMatterAntimatterReaction()
 
 void impulsePower()
 {
-  Serial.println("Impulse engines engaged, Captain.");
-  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
-                      lightYellow,
-                      255,
-                      10,
-                      FORWARD);
-  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(1),
+  Serial.println("\"Impulse engines engaged, Captain.\"");
+  // Turn the Impulse Exhausts Red
+  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(ImpulseExhaustsPixel),
                       red,
                       155,
                       10,
                       FORWARD);
+  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(ImpulseCrystalPixel),
+                      impulseWhite,
+                      155,
+                      10,
+                      FORWARD);
+
 }
 
 void ImpulseCrystalComplete()
@@ -145,14 +149,13 @@ void ImpulseExhaustsComplete()
 
 void warpPower()
 {
-  Serial.println("Warp speed at your command.");;
-  // warpDrivetrain.setPixelColor(0, 0, 155, 184);
-  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(0),
+  Serial.println("\"Warp speed at your command.\"");;
+  ImpulseCrystal.Fade(warpDrivetrain.getPixelColor(ImpulseCrystalPixel),
                        turquoise,
                        155,
                        10,
                       FORWARD);
-  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(1),
+  ImpulseExhausts.Fade(warpDrivetrain.getPixelColor(ImpulseExhaustsPixel),
                       black,
                       155,
                       10,
@@ -183,12 +186,15 @@ void readButton() {
 void setup ()
 {
   Serial.begin(9600);
-  pinMode (NavigationPin, OUTPUT);
-  pinMode (StrobesPin, OUTPUT);
+  pinMode(NavigationPin, OUTPUT);
+  pinMode(StrobesPin, OUTPUT);
   pinMode(ButtonPin, INPUT_PULLUP);
-  strobes.begin ();
-  navigationMarkers.begin ();
+  strobes.begin();
+  strobes.off();
+  navigationMarkers.begin();
+  navigationMarkers.off();
   warpDrivetrain.begin();
+
   // warpDrivetrain.show(); // Initialize all pixels to 'off'
 }
 
