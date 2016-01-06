@@ -20,7 +20,7 @@ void NeoPixel_Animator::Increment()
             Index = 0;
             if (OnComplete != NULL)
             {
-                OnComplete(); // call the comlpetion callback
+                OnComplete(); // call the completion callback
             }
         }
     }
@@ -32,7 +32,7 @@ void NeoPixel_Animator::Increment()
             Index = TotalSteps-1;
             if (OnComplete != NULL)
             {
-                OnComplete(); // call the comlpetion callback
+                OnComplete(); // call the completion callback
             }
         }
     }
@@ -178,9 +178,6 @@ void NeoPixel_Animator::FadeUpdate()
 
     ColorSet(strip.Color(redComponent, greenComponent, blueComponent));
     // strip.show();
-    if (Index >= TotalSteps) {
-      Serial.println("Waht am I doing?");
-    }
     Increment();
 }
 
@@ -197,9 +194,9 @@ void NeoPixel_Animator::ColorSet(uint32_t color)
 {
     for (int i = 0; i < PixelCount; i++)
     {
-        strip.setPixelColor(PixelIndex+i, color);
+      int index = PixelIndex + i;
+      strip.setPixelColor(index, color);
     }
-    // strip.show();
 }
 
 // Returns the Red-component of a 32-bit color
