@@ -43,39 +43,20 @@ uint32_t red = drivetrain.Color(20, 248, 0);
 uint32_t turquoise = drivetrain.Color(128, 0, 153);
 
 // Pieces of the finite state machine.
-typedef enum {
-  initialState,
+typedef enum ShipStates {
+  offline,
   wantStandby,
   wantNavigation,
   wantStrobes,
   wantImpulse,
   wantWarp,
   steadyAsSheGoes
-} states;
-states shipStatus = initialState;
+};
+ShipStates shipStatus = offline;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
 int canSheTakeAnyMore = 0; // which is to say we start in impulse mode
 bool lastButtonState = HIGH;
-
-void readButton()
-{
-    // Get current button state.
-    bool buttonState = digitalRead(ButtonPin);
-    // Check if state changed from high to low (button press).
-    if (buttonState == LOW && lastButtonState == HIGH) {
-      // Short delay to debounce button.
-      delay(20);
-      // Check if button is still low after debounce.
-      buttonState = digitalRead(ButtonPin);
-      if (buttonState == LOW) {
-        // advanceState();
-        advanceState();
-      }
-    }
-    // Set the last button state to the old state.
-    lastButtonState = buttonState;
-}
 
 void setup ()
 {
@@ -89,7 +70,6 @@ void setup ()
   navigationMarkers.begin();
   navigationMarkers.off();
   drivetrain.begin();
-  //analogWrite(FloodlightsPin, 252);
   floodlights.set_value(255);
   floodlights.set_curve(Curve::exponential);
 }
@@ -111,13 +91,32 @@ void loop ()
   drivetrain.show();
 }  // end of loop
 
+void readButton()
+{
+    // Get current button state.
+    bool buttonState = digitalRead(ButtonPin);
+    // Check if state changed from high to low (button press).
+    if (buttonState == LOW && lastButtonState == HIGH) {
+      // Short delay to debounce button.
+      delay(20);
+      // Check if button is still low after debounce.
+      buttonState = digitalRead(ButtonPin);
+      if (buttonState == LOW) {
+        // advanceState();
+        advanceState();
+      }
+    }
+    // Set the last button state to the old state.
+    lastButtonState = buttonState;
+}
+
 void doStateChange ()
 {
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
   switch (shipStatus)
   {
-    case initialState:
+    case offline:
       beginMatterAntimatterReaction();
       timeInThisState = 2000;
       shipStatus = wantNavigation;
