@@ -32,8 +32,8 @@ LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 // A Neopixel Object to manage the series of lights that represent the warp drive, impulse engines, etc..
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
 // Animators for each component represented by a range of pixels in the drivetrain.
-NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &ImpulseCrystalComplete);
-NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &ImpulseExhaustsComplete);
+NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &_impulseCrystalComplete);
+NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &_impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &DeflectorDishComplete);
 
 // Colors
@@ -42,7 +42,7 @@ uint32_t impulseWhite = drivetrain.Color(230, 255, 0);
 uint32_t red = drivetrain.Color(20, 248, 0);
 uint32_t turquoise = drivetrain.Color(128, 0, 153);
 
-  // states for the finite stae machine
+// Pieces of the finite stae machine.
 typedef enum {
   initialState,
   wantFloodlights,
@@ -57,7 +57,8 @@ unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
 int canSheTakeAnyMore = 0; // which is to say we start in impulse mode
 
-void doStateChange () {
+void doStateChange ()
+{
   lastStateChange = millis ();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
   switch (shipStatus)
@@ -80,22 +81,22 @@ void doStateChange () {
       break;
 
     case wantWarp:
-      warpPower();
+      transitionToWarpPower();
       shipStatus = standby;
       break;
 
     case wantImpulse:
-      impulsePower();
+      transitionToImpulsePower();
       shipStatus = standby;
       break;
 
     case wantFloodlights:
-      turnOnFloodlights();
+      transitionToStandby();
       shipStatus = standby;
       break;
 
     case standby:
-      //impulsePower();
+      //transitionToImpulsePower();
       break;
   }  // end of switch on shipStatus
 }  // end of doStateChange
@@ -129,7 +130,7 @@ void beginMatterAntimatterReaction()
   floodlights.fade(254, 1200);
 }
 
-void turnOnFloodlights()
+void transitionToStandby()
 {
   Serial.println("Standing By. Shuttle Approach Ready.");
   floodlights.fade(0, 1200);
@@ -151,7 +152,7 @@ void turnOnFloodlights()
 
 }
 
-void impulsePower()
+void transitionToImpulsePower()
 {
   Serial.println("\"Impulse engines engaged, Captain.\"");
   floodlights.fade(254, 750);
@@ -174,7 +175,7 @@ void impulsePower()
                       FORWARD);
 }
 
-void warpPower()
+void transitionToWarpPower()
 {
   Serial.println("\"Warp speed at your command.\"");
   floodlights.fade(254, 750);
@@ -195,15 +196,15 @@ void warpPower()
                       FORWARD);
 }
 
-void ImpulseCrystalComplete()
+void _impulseCrystalComplete()
 {
-    // Serial.println("ImpulseCrystalComplete()");
+    // Serial.println("_impulseCrystalComplete()");
     impulseCrystal.ActivePattern = NONE;
 }
 
-void ImpulseExhaustsComplete()
+void _impulseExhaustsComplete()
 {
-  // Serial.println("ImpulseExhaustsComplete()");
+  // Serial.println("_impulseExhaustsComplete()");
   impulseExhausts.ActivePattern = NONE;
 }
 
