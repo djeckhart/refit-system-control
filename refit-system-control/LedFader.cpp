@@ -1,134 +1,169 @@
 /*
+ * LED.cpp
+ *
+ *  Created on: Sep 24, 2013
+ *      Author: jeremy
+ */
 
-Author: Nick Gammon
-Date:   27 December 2012
+#include "LEDFader.h"
 
-Usage:
+LEDFader::LEDFader(uint8_t pwm_pin) {
+  pin = pwm_pin;
+  color = 255;
+  to_color = 0;
+  last_step_time = 0;
+  interval = 0;
+  duration = 0;
+  percent_done = 0;
+  curve = (curve_function)0;
+}
 
-  LedFader ledName (pin, minValue, maxValue, msPerCycle, initiallyActive);   // set parameters
-
-  eg.
-
-  LedFader laserTurrent (5, 0, 255, 3000, true);   // set parameters. pin 5, go from 0 to 255 every 3 seconds
-
-  laserTurrent.begin ();    // initialize
-  laserTurrent.on ();       // turn on
-  laserTurrent.off ();      // turn off
-  bool isOn = laserTurrent.isOn ();  // is it currently on?
-
-  laserTurrent.update ();   // call in loop function
-
-
-      // EXAMPLE CODE ---------------------------------------------------
-
-      // set up some LEDs
-      //                 pin  min max  millis
-      LedFader strobe     (3, 10, 200,  1000);
-      LedFader navigation (5, 10, 200,   500);
-      LedFader torpedoes  (6, 10, 200,   250);
-
-      void setup()
-        {
-        strobe.begin ();
-        navigation.begin ();
-        torpedoes.begin ();
-        }  // end of setup
-
-      void loop()
-        {
-        // update lights
-        strobe.update ();
-        navigation.update ();
-        torpedoes.update ();
-
-        // do other useful stuff here ...
-
-        }  // end of loop
-
-*/
-
-#include "LedFader.h"
-
-// constructor
-LedFader::LedFader (const byte pin,
-                    const byte minValue,
-                    const byte maxValue,
-                    const unsigned long msPerCycle,
-                    const bool active,
-                    const bool stopWhenOn) :
-         pin_ (pin), minValue_ (minValue), maxValue_ (maxValue), msPerCycle_ (msPerCycle)
-   {
-   startTime_ = 0;
-   active_ = active;
-   stopWhenOn_ = stopWhenOn;
-   forwards_ = true;
-   }  // end of  LedFader::LedFader
+void LEDFader::set_pin(uint8_t pwm_pin) {
+  pin = pwm_pin;
+}
+uint8_t LEDFader::get_pin(){
+  return pin;
+}
 
 
-// set pin to output, get current time
-void LedFader::begin ()
-  {
-  pinMode (pin_, OUTPUT);
-  digitalWrite (pin_, LOW);
-  startTime_ = millis ();
-  }  // end of LedFader::begin
-  //
-// call from loop to flash the LED
-void LedFader::update ()
-  {
-  // do nothing if not active
-  if (!active_)
-    return;
-
-  unsigned long now = millis ();
-  unsigned long howFarDone = now - startTime_;
-  if (howFarDone >= msPerCycle_)
-    {
-    forwards_ = !forwards_;  // change direction
-    if (forwards_)
-      analogWrite (pin_, minValue_);
-    else
-      analogWrite (pin_, maxValue_);
-    startTime_ = now;
-
-    // stop when at required brightness?
-    if (stopWhenOn_)
-      active_ = false;
-    }  // end of overshot time for this cycle
+void LEDFader::set_value(int value) {
+  if (!pin) return;
+  color = (uint8_t)constrain(value, 0, 255);
+  if (curve)
+   analogWrite(pin, curve(color));
   else
-    {
-    unsigned long newValue;
-    byte valDifference = maxValue_ - minValue_;
+  analogWrite(pin, color);
+}
 
-    if (forwards_)
-      newValue = (howFarDone * valDifference) / msPerCycle_;
-    else
-      newValue = ((msPerCycle_ - howFarDone) * valDifference) / msPerCycle_;
+uint8_t LEDFader::get_value() {
+  return color;
+}
 
-    analogWrite (pin_, newValue + minValue_);
+uint8_t LEDFader::get_target_value() {
+  return to_color;
+}
 
-    }  // end of still in same cycle
+// Set curve to transform output
+void LEDFader::set_curve(curve_function c) {
+ curve = c;
+}
 
+// Get the current curve function pointer
+LEDFader::curve_function LEDFader::get_curve() {
+ return curve;
+}
 
-  } // end of LedFader::update
+void LEDFader::slower(int by) {
+  float cached_percent = percent_done;
+  duration += by;
+  fade(to_color, duration);
+  percent_done = cached_percent;
+}
 
- // activate this LED
- void LedFader::on ()
-   {
-   active_ = true;
-   startTime_ = millis ();
-   forwards_ = true;
-   }  // end of LedFader::on
+void LEDFader::faster(int by) {
+  float cached_percent = percent_done;
 
- // deactivate this LED
- void LedFader::off ()
-   {
-   active_ = false;
-   digitalWrite(pin_, LOW);
-   }  // end of LedFader::off
+  // Ends the fade
+  if (duration <= by) {
+    stop_fade();
+    set_value(to_color);
+  }
+  else {
+    duration -= by;
+    fade(to_color, duration);
+  }
+  percent_done = cached_percent;
+}
 
- // is it active?
- bool LedFader::isOn () const
-   {
-   return active_;
-   }  // end of LedFader::isOn
+void LEDFader::fade(uint8_t value, unsigned int time) {
+  stop_fade();
+  percent_done = 0;
+
+  // No pin defined
+  if (!pin) {
+    return;
+  }
+
+  // Color hasn't changed
+  if (value == color) {
+    return;
+  }
+
+  if (time <= MIN_INTERVAL) {
+    set_value(value);
+    return;
+  }
+
+  duration = time;
+  to_color = (uint8_t)constrain(value, 0, 255);
+
+  // Figure out what the interval should be so that we're chaning the color by at least 1 each cycle
+  // (minimum interval is MIN_INTERVAL)
+  float color_diff = abs(color - to_color);
+  interval = round((float)duration / color_diff);
+  if (interval < MIN_INTERVAL) {
+    interval = MIN_INTERVAL;
+  }
+
+  last_step_time = millis();
+}
+
+bool LEDFader::is_fading() {
+  if (!pin)
+    return false;
+  if (duration > 0)
+    return true;
+  return false;
+}
+
+void LEDFader::stop_fade() {
+  percent_done = 100;
+  duration = 0;
+}
+
+uint8_t LEDFader::get_progress() {
+  return round(percent_done);
+}
+
+bool LEDFader::update() {
+
+  // No pin defined
+  if (!pin) {
+    return false;
+  }
+
+  // No fade
+  if (duration == 0) {
+    return false;
+  }
+
+  unsigned long now = millis();
+  unsigned int time_diff = now - last_step_time;
+
+  // Interval hasn't passed yet
+  if (time_diff < interval) {
+    return true;
+  }
+
+  // How far along have we gone since last update
+  float percent = (float)time_diff / (float)duration;
+  percent_done += percent;
+
+  // We've hit 100%, set LED to the final color
+  if (percent >= 1) {
+    stop_fade();
+    set_value(to_color);
+    return false;
+  }
+
+  // Move color to where it should be
+  int color_diff = to_color - color;
+  int increment = round(color_diff * percent);
+
+  set_value(color + increment);
+
+  // Update time and finish
+  duration -= time_diff;
+  last_step_time = millis();
+  return true;
+}
