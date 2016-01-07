@@ -15,11 +15,11 @@ const byte FloodlightsPin = 11; // PWM
 const byte StrobesPin = 10; // PWM
 const byte NavigationPin = 9;
 const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will be
-                          // driven with a pull-up resistor so the switch should
-                          // pull the pin to ground momentarily.  On a high -> low
-                          // transition the button press logic will execute.
-const byte WarpDrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
-const byte WarpDrivetrainPixelCount = 4;
+                            // driven with a pull-up resistor so the switch should
+                            // pull the pin to ground momentarily.  On a high -> low
+                            // transition the button press logic will execute.
+const byte DrivetrainPin = 6; // Digital IO pin connected to the NeoPixels.
+const byte DrivetrainPixelCount = 4;
 // The offset for each component's pixels in the strip.
 const byte ImpulseCrystalPixel = 0;
 const byte ImpulseExhaustsPixel = 1; // 2 pixels
@@ -30,7 +30,7 @@ LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
 // A Neopixel Object to manage the series of lights that represent the warp drive, impulse engines, etc..
-Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
 // Animators for each component represented by a range of pixels in the drivetrain.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
