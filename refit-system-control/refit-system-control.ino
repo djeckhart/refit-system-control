@@ -32,9 +32,9 @@ LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 // A Neopixel Object to manage the series of lights that represent the warp drive, impulse engines, etc..
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(WarpDrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
 // Animators for each component represented by a range of pixels in the drivetrain.
-NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &_impulseCrystalComplete);
-NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &_impulseExhaustsComplete);
-NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &DeflectorDishComplete);
+NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
+NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
+NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
 
 // Colors
 uint32_t black = drivetrain.Color(0,0,0);
@@ -42,20 +42,74 @@ uint32_t impulseWhite = drivetrain.Color(230, 255, 0);
 uint32_t red = drivetrain.Color(20, 248, 0);
 uint32_t turquoise = drivetrain.Color(128, 0, 153);
 
-// Pieces of the finite stae machine.
+// Pieces of the finite state machine.
 typedef enum {
   initialState,
-  wantFloodlights,
+  wantStandby,
   wantNavigation,
   wantStrobes,
   wantImpulse,
   wantWarp,
-  standby
+  steadyAsSheGoes
 } states;
 states shipStatus = initialState;
 unsigned long lastStateChange = 0;
 unsigned long timeInThisState = 1000;
 int canSheTakeAnyMore = 0; // which is to say we start in impulse mode
+bool lastButtonState = HIGH;
+
+void readButton()
+{
+    // Get current button state.
+    bool buttonState = digitalRead(ButtonPin);
+    // Check if state changed from high to low (button press).
+    if (buttonState == LOW && lastButtonState == HIGH) {
+      // Short delay to debounce button.
+      delay(20);
+      // Check if button is still low after debounce.
+      buttonState = digitalRead(ButtonPin);
+      if (buttonState == LOW) {
+        // advanceState();
+        advanceState();
+      }
+    }
+    // Set the last button state to the old state.
+    lastButtonState = buttonState;
+}
+
+void setup ()
+{
+  Serial.begin(9600);
+  pinMode(FloodlightsPin, OUTPUT);
+  pinMode(NavigationPin, OUTPUT);
+  pinMode(StrobesPin, OUTPUT);
+  pinMode(ButtonPin, INPUT_PULLUP);
+  strobes.begin();
+  strobes.off();
+  navigationMarkers.begin();
+  navigationMarkers.off();
+  drivetrain.begin();
+  //analogWrite(FloodlightsPin, 252);
+  floodlights.set_value(255);
+  floodlights.set_curve(Curve::exponential);
+}
+
+void loop ()
+{
+  if (millis () - lastStateChange >= timeInThisState)
+  {
+    doStateChange ();
+  }
+  // update faders, flashers
+  readButton();
+  navigationMarkers.update();
+  floodlights.update();
+  strobes.update();
+  impulseCrystal.Update();
+  impulseExhausts.Update();
+  deflectorDish.Update();
+  drivetrain.show();
+}  // end of loop
 
 void doStateChange ()
 {
@@ -77,25 +131,25 @@ void doStateChange ()
 
     case wantStrobes:
       strobes.on();
-      shipStatus = standby;
+      shipStatus = steadyAsSheGoes;
       break;
 
     case wantWarp:
       transitionToWarpPower();
-      shipStatus = standby;
+      shipStatus = steadyAsSheGoes;
       break;
 
     case wantImpulse:
       transitionToImpulsePower();
-      shipStatus = standby;
+      shipStatus = steadyAsSheGoes;
       break;
 
-    case wantFloodlights:
+    case wantStandby:
       transitionToStandby();
-      shipStatus = standby;
+      shipStatus = steadyAsSheGoes;
       break;
 
-    case standby:
+    case steadyAsSheGoes:
       //transitionToImpulsePower();
       break;
   }  // end of switch on shipStatus
@@ -109,7 +163,7 @@ void advanceState()
   } else if (canSheTakeAnyMore == 2){
     shipStatus = wantWarp;
   } else {
-    shipStatus = wantFloodlights;
+    shipStatus = wantStandby;
     canSheTakeAnyMore = 0;
   }
   doStateChange();
@@ -196,75 +250,20 @@ void transitionToWarpPower()
                       FORWARD);
 }
 
-void _impulseCrystalComplete()
+void impulseCrystalComplete()
 {
-    // Serial.println("_impulseCrystalComplete()");
+    // Serial.println("impulseCrystalComplete()");
     impulseCrystal.ActivePattern = NONE;
 }
 
-void _impulseExhaustsComplete()
+void impulseExhaustsComplete()
 {
-  // Serial.println("_impulseExhaustsComplete()");
+  // Serial.println("impulseExhaustsComplete()");
   impulseExhausts.ActivePattern = NONE;
 }
 
-void DeflectorDishComplete()
+void deflectorDishComplete()
 {
-  // Serial.println("DeflectorDishComplete()");
+  // Serial.println("deflectorDishComplete()");
   deflectorDish.ActivePattern = NONE;
 }
-
-bool lastButtonState = HIGH;
-
-void readButton()
-{
-    // Get current button state.
-    bool buttonState = digitalRead(ButtonPin);
-    // Check if state changed from high to low (button press).
-    if (buttonState == LOW && lastButtonState == HIGH) {
-      // Short delay to debounce button.
-      delay(20);
-      // Check if button is still low after debounce.
-      buttonState = digitalRead(ButtonPin);
-      if (buttonState == LOW) {
-        // advanceState();
-        advanceState();
-      }
-    }
-    // Set the last button state to the old state.
-    lastButtonState = buttonState;
-}
-
-void setup ()
-{
-  Serial.begin(9600);
-  pinMode(FloodlightsPin, OUTPUT);
-  pinMode(NavigationPin, OUTPUT);
-  pinMode(StrobesPin, OUTPUT);
-  pinMode(ButtonPin, INPUT_PULLUP);
-  strobes.begin();
-  strobes.off();
-  navigationMarkers.begin();
-  navigationMarkers.off();
-  drivetrain.begin();
-  //analogWrite(FloodlightsPin, 252);
-  floodlights.set_value(255);
-  floodlights.set_curve(Curve::exponential);
-}
-
-void loop ()
-{
-  if (millis () - lastStateChange >= timeInThisState)
-  {
-    doStateChange ();
-  }
-  // update faders, flashers
-  readButton();
-  navigationMarkers.update();
-  floodlights.update();
-  strobes.update();
-  impulseCrystal.Update();
-  impulseExhausts.Update();
-  deflectorDish.Update();
-  drivetrain.show();
-}  // end of loop
