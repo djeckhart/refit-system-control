@@ -196,6 +196,7 @@ void setup ()
   warpDrivetrain.begin();
 
   // warpDrivetrain.show(); // Initialize all pixels to 'off'
+  floodlights.set_curve(Curve::exponential);
 }
 
 void loop ()
