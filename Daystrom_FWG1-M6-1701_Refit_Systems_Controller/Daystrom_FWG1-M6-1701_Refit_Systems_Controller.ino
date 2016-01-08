@@ -1,5 +1,5 @@
 /*
- * Refit System Control
+ * Daystrom FWG1-M6-1701 Refit Systems Controller
  * Author: Frankie Winters
  * License: WTFPL
  */
@@ -30,7 +30,7 @@ LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
 // A Neopixel Object to manage the series of lights that represent the warp drive, impulse engines, etc..
-Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, WarpDrivetrainPin, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
 // Animators for each component represented by a range of pixels in the drivetrain.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
@@ -43,7 +43,7 @@ uint32_t red = drivetrain.Color(20, 248, 0);
 uint32_t turquoise = drivetrain.Color(128, 0, 153);
 
 // Pieces of the finite state machine.
-typedef enum ShipStates {
+enum ShipStates {
   offline,
   wantStandby,
   wantNavigation,
@@ -53,9 +53,9 @@ typedef enum ShipStates {
   steadyAsSheGoes
 };
 ShipStates shipStatus = offline;
-unsigned long lastStateChange = 0;
-unsigned long timeInThisState = 1000;
-int canSheTakeAnyMore = 0; // which is to say we go to impulse mode before warp
+uint8_t lastStateChange = 0;
+uint8_t timeInThisState = 1000;
+uint8_t howMuchMoreOfThisSheCanTake = 0; // which is to say we go to impulse mode before warp
 bool lastButtonState = HIGH;
 
 void setup ()
@@ -156,14 +156,14 @@ void doStateChange ()
 
 void advanceState()
 {
-  canSheTakeAnyMore++;
-  if (canSheTakeAnyMore == 1) {
+  howMuchMoreOfThisSheCanTake++;
+  if (howMuchMoreOfThisSheCanTake == 1) {
     shipStatus = wantImpulse;
-  } else if (canSheTakeAnyMore == 2){
+  } else if (howMuchMoreOfThisSheCanTake == 2){
     shipStatus = wantWarp;
   } else {
     shipStatus = wantStandby;
-    canSheTakeAnyMore = 0;
+    howMuchMoreOfThisSheCanTake = 0;
   }
   doStateChange();
  }

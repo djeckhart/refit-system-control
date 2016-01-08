@@ -1,9 +1,9 @@
+#pragma once
 // NeoPixel Animator derived from the Adafruit_NeoPixel class to operate on only a subset of a strip's pixels.
-
-#include <Arduino.h>
-#include "Adafruit_NeoPixel.h"
+// #include <Arduino.h>
 // https://learn.adafruit.com/multi-tasking-the-arduino-part-3/using-neopatterns
 //
+#include "Adafruit_NeoPixel.h"
 // Pattern types supported:
 enum  pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE };
 // Patern directions supported:

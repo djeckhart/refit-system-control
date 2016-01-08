@@ -1,3 +1,4 @@
+#pragma once
 // jb_exe
 // Class from the code of JEFF'S ARDUINO BLOG
 // http://jmsarduino.blogspot.com/2009/10/4-way-button-click-double-click-hold.html
