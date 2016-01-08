@@ -53,8 +53,8 @@ enum ShipStates {
   steadyAsSheGoes
 };
 ShipStates shipStatus = offline;
-uint8_t lastStateChange = 0;
-uint8_t timeInThisState = 1000;
+unsigned long lastStateChange = 0;
+unsigned long timeInThisState = 1000;
 uint8_t howMuchMoreOfThisSheCanTake = 0; // which is to say we go to impulse mode before warp
 bool lastButtonState = HIGH;
 
