@@ -1,10 +1,12 @@
+#pragma once
 #include "Adafruit_NeoPixel.h"
+
 // https://learn.adafruit.com/multi-tasking-the-arduino-part-3/using-neopatterns
 //
 // Pattern types supported:
-enum  pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE };
+enum pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE };
 // Patern directions supported:
-enum  direction { FORWARD, REVERSE };
+enum direction { FORWARD, REVERSE };
 
 // NeoPattern Class - derived from the Adafruit_NeoPixel class
 class NeoPatterns : public Adafruit_NeoPixel
