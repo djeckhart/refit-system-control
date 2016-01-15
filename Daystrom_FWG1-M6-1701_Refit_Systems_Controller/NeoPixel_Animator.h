@@ -3,11 +3,7 @@
 // #include <Arduino.h>
 // https://learn.adafruit.com/multi-tasking-the-arduino-part-3/using-neopatterns
 //
-#include "Adafruit_NeoPixel.h"
-// Pattern types supported:
-enum  pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE };
-// Patern directions supported:
-enum  direction { FORWARD, REVERSE };
+#include "Adafruit_NeoPatterns.h" // for patterns and direction definitions
 
 // NeoPixel_Animator NeoPattern Class -
 class NeoPixel_Animator
