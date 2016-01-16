@@ -20,9 +20,11 @@ const byte FloodlightsPin = 5;    // Needs PWM
 const byte ShuttleApproachPin = 4;
 const byte ButtonPin = 2;         // Digital IO pin connected to the button.
 // The offsets for each component's pixels in the strip. (number of pixels for each component)
-const byte ImpulseCrystalPixel = 0;  // (1 pixel)
-const byte ImpulseExhaustsPixel = 1; // (2 pixel)
-const byte DeflectorDishPixel = 3;   // (1 pixel)
+const byte ImpulseCrystalPixel = 0;   // (1 pixel)
+const byte ImpulseExhaustsPixel = 1;  // (2 pixel)
+const byte DeflectorDishPixel = 3;    // (1 pixel)
+const byte ShuttleStarboardPixel = 0; // (16 pixels)
+const byte ShuttlePortPixel = 17;     // (16 pixel)
 
 // Length of the Neopixel Chains
 const byte DrivetrainLength = 4;
@@ -37,14 +39,14 @@ LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // Controllers for the strands of Neopixels connected to the Arduino.
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainLength, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel shuttleApproach = Adafruit_NeoPixel(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800);
+NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
 NeoPatterns fluxChillers = NeoPatterns(FluxChillersLength, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 
 // Controllers for the “logical” subcomponents of the drivetrain and shuttle approach.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
-// NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, 0, 16, &shuttleApproachComplete);
+// NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, ShuttleStarboardPixel, 16, &shuttleApproachComplete);
 // NeoPixel_Animator shuttleApproachPort = NeoPixel_Animator(shuttleApproach, 0, 16, &shuttleApproachComplete);
 
 // Colors - Note that these are not TODO: What? Both strips are initialized with NEO_RGB.
@@ -89,8 +91,8 @@ void setup ()
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
   fluxChillers.ColorSet(drivetrainBlack);
-  // shuttleApproach.begin();
-  // shuttleApproach.ColorSet(drivetrainBlack);
+  shuttleApproach.begin();
+  shuttleApproach.ColorSet(drivetrainBlack);
   // shuttleApproachStarboard.ColorSet(drivetrainBlack);
   // shuttleApproachPort.Direction = REVERSE;
   drivetrain.begin();
@@ -115,7 +117,7 @@ void loop ()
   deflectorDish.Update();
   fluxChillers.Update();
   // shuttleApproachStarboard.Update();
-  // shuttleApproach.Update();
+  shuttleApproach.Update();
   drivetrain.show();
 }  // end of loop
 
@@ -209,7 +211,7 @@ void transitionToStandby()
   Serial.println("\"Standing By. Shuttle Approach Ready.\"");
   floodlights.fade(0, 1200);
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  // shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
+  shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
@@ -219,8 +221,7 @@ void transitionToImpulsePower()
 {
   Serial.println("\"Impulse engines engaged, Captain.\"");
   floodlights.fade(254, 750);
-  // shuttleApproachStarboard.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  // shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
+  shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainRed, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
