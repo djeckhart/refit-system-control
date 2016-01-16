@@ -34,7 +34,7 @@ LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // A Neopixel Object to manage the series of lights that represent the impulse crystal, impulse exhausts, and deflector
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, NULL);
+NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
 // Neopatterns object to manage the Magnatomic Flux Chiller Grills.
 NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 // Animators for each component represented by a range of pixels in drivetrain.
