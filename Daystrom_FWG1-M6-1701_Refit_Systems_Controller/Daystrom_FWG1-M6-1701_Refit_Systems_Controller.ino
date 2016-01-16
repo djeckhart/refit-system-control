@@ -18,7 +18,7 @@ const byte StrobesPin = 10; // Needs PWM
 const byte NavigationPin = 9; // Needs PWM
 const byte FloodlightsPin = 5; // Needs PWM
 const byte ShuttleApproachPin = 4;
-const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will be driven with a pull-up resistor so the switch should pull the pin to ground momentarily.  On a high -> low transition the button press logic will execute.
+const byte ButtonPin = 2; // Digital IO pin connected to the button.
 const byte DrivetrainPixelCount = 4;
 const byte FluxChillerPixelCount = 30;
 const byte ShuttleApproachPixelCount = 16;
@@ -37,7 +37,7 @@ Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, Drivetrai
 NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, NULL);
 // Neopatterns object to manage the Magnatomic Flux Chiller Grills.
 NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
-// Animators for each component represented by a range of pixels in the drivetrain.,                               // (NeoPixel strip, firstPixelIndex, pixelCount, callback);
+// Animators for each component represented by a range of pixels in drivetrain.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
@@ -117,6 +117,7 @@ void loop ()
 
 void readButton()
 {
+    // This will be driven INPUT so the switch should pull the pin to ground momentarily.  On a high -> low transition the button press logic will execute.
     // Get current button state.
     bool buttonState = digitalRead(ButtonPin);
     // Check if state changed from high to low (button press).
@@ -126,7 +127,6 @@ void readButton()
       // Check if button is still low after debounce.
       buttonState = digitalRead(ButtonPin);
       if (buttonState == LOW) {
-        // advanceState();
         advanceState();
       }
     }
@@ -206,7 +206,6 @@ void transitionToStandby()
   floodlights.fade(0, 1200);
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
   shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
-  // shuttleApproachPort.Scanner(impulseWhite, 50);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
@@ -218,10 +217,7 @@ void transitionToImpulsePower()
   floodlights.fade(254, 750);
   // shuttleApproachStarboard.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
   shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
-
-  // Turn the Impulse Exhausts Red
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainRed, 155, 10, FORWARD);
-  // Turn the Impulse Crystal Impulse Yellow
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
 }
@@ -237,21 +233,27 @@ void transitionToWarpPower()
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 75, 10, FORWARD);
 }
 
-void fluxChillersStage1Complete() {
+void fluxChillersStage1Complete()
+{
   fluxChillers.OnComplete = &fluxChillersStage2Complete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
 }
 
-void fluxChillersStage2Complete() {
+void fluxChillersStage2Complete()
+{
   fluxChillers.OnComplete = &fluxChillersComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), warpBlue, 75, 5, FORWARD);
 }
 
-void fluxChillersComplete(){
+void fluxChillersComplete()
+{
   fluxChillers.ActivePattern = NONE;
 };
 
-void shuttleApproachComplete(){};
+void shuttleApproachComplete()
+{
+
+};
 
 void impulseCrystalComplete()
 {
