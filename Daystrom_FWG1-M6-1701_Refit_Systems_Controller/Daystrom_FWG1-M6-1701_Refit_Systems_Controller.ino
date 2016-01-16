@@ -17,7 +17,7 @@ const byte FluxChillersPin = 11;  // Digital IO pin connected to NeoPixels.
 const byte StrobesPin = 10; // Needs PWM
 const byte NavigationPin = 9; // Needs PWM
 const byte FloodlightsPin = 5; // Needs PWM
-const byte ShuttleApproachPin = 4; // Needs PWM
+const byte ShuttleApproachPin = 4;
 const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will be driven with a pull-up resistor so the switch should pull the pin to ground momentarily.  On a high -> low transition the button press logic will execute.
 const byte DrivetrainPixelCount = 4;
 const byte FluxChillerPixelCount = 30;
@@ -34,7 +34,7 @@ LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // A Neopixel Object to manage the series of lights that represent the impulse crystal, impulse exhausts, and deflector
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-Adafruit_NeoPixel shuttleApproach = Adafruit_NeoPixel(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800);
+NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, NULL);
 // Neopatterns object to manage the Magnatomic Flux Chiller Grills.
 NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 // Animators for each component represented by a range of pixels in the drivetrain.
@@ -43,7 +43,7 @@ NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalP
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
 // NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, 0, 8, &shuttleApproachComplete);
-// NeoPixel_Animator shuttleApproachPort = NeoPixel_Animator(shuttleApproach, 8, 8, &shuttleApproachComplete);
+// NeoPixel_Animator shuttleApproachPort = NeoPixel_Animator(shuttleApproach, 0, 16, &shuttleApproachComplete);
 
 // Colors - Note that these are not TODO: What? Both strips are initialized with NEO_RGB.
 uint32_t drivetrainBlack = drivetrain.Color(0,0,0);
@@ -86,8 +86,8 @@ void setup ()
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
   fluxChillers.ColorSet(drivetrainBlack);
-  // shuttleApproach.begin();
-  // shuttleApproachPort.ColorSet(drivetrainBlack);
+  shuttleApproach.begin();
+  shuttleApproach.ColorSet(drivetrainBlack);
   // shuttleApproachStarboard.ColorSet(drivetrainBlack);
   // shuttleApproachPort.Direction = REVERSE;
   drivetrain.begin();
@@ -112,7 +112,7 @@ void loop ()
   deflectorDish.Update();
   fluxChillers.Update();
   // shuttleApproachStarboard.Update();
-  // shuttleApproachPort.Update();
+  shuttleApproach.Update();
   drivetrain.show();
 }  // end of loop
 
@@ -214,7 +214,7 @@ void transitionToStandby()
   Serial.println("\"Standing By. Shuttle Approach Ready.\"");
   floodlights.fade(0, 1200);
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  // shuttleApproachStarboard.Scanner(impulseWhite, 50);
+  shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
   // shuttleApproachPort.Scanner(impulseWhite, 50);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
                       drivetrainBlack,
@@ -238,7 +238,7 @@ void transitionToImpulsePower()
   Serial.println("\"Impulse engines engaged, Captain.\"");
   floodlights.fade(254, 750);
   // shuttleApproachStarboard.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  // shuttleApproachPort.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, REVERSE);
+  shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
 
   // Turn the Impulse Exhausts Red
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
