@@ -89,8 +89,8 @@ void setup ()
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
   fluxChillers.ColorSet(drivetrainBlack);
-  shuttleApproach.begin();
-  shuttleApproach.ColorSet(drivetrainBlack);
+  // shuttleApproach.begin();
+  // shuttleApproach.ColorSet(drivetrainBlack);
   // shuttleApproachStarboard.ColorSet(drivetrainBlack);
   // shuttleApproachPort.Direction = REVERSE;
   drivetrain.begin();
@@ -115,7 +115,7 @@ void loop ()
   deflectorDish.Update();
   fluxChillers.Update();
   // shuttleApproachStarboard.Update();
-  shuttleApproach.Update();
+  // shuttleApproach.Update();
   drivetrain.show();
 }  // end of loop
 
@@ -209,7 +209,7 @@ void transitionToStandby()
   Serial.println("\"Standing By. Shuttle Approach Ready.\"");
   floodlights.fade(0, 1200);
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
+  // shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
@@ -220,7 +220,7 @@ void transitionToImpulsePower()
   Serial.println("\"Impulse engines engaged, Captain.\"");
   floodlights.fade(254, 750);
   // shuttleApproachStarboard.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
-  shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
+  // shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainRed, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
