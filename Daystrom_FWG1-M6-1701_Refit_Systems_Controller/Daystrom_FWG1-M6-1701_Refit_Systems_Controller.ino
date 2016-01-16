@@ -12,32 +12,33 @@
 #include "Adafruit_NeoPatterns.h"
 
 // pin assignments
-const byte DrivetrainPin = 12; // Digital IO pin connected to NeoPixels.
+const byte DrivetrainPin = 12;    // Digital IO pin connected to NeoPixels.
 const byte FluxChillersPin = 11;  // Digital IO pin connected to NeoPixels.
-const byte StrobesPin = 10; // Needs PWM
-const byte NavigationPin = 9; // Needs PWM
-const byte FloodlightsPin = 5; // Needs PWM
+const byte StrobesPin = 10;       // Needs PWM
+const byte NavigationPin = 9;     // Needs PWM
+const byte FloodlightsPin = 5;    // Needs PWM
 const byte ShuttleApproachPin = 4;
-const byte ButtonPin = 2; // Digital IO pin connected to the button.
-const byte DrivetrainPixelCount = 4;
-const byte FluxChillerPixelCount = 30;
-const byte ShuttleApproachPixelCount = 16;
-// The offset for each component's pixels in the strip.
+const byte ButtonPin = 2;         // Digital IO pin connected to the button.
+// The offsets for each component's pixels in the strip.
 const byte ImpulseCrystalPixel = 0;
 const byte ImpulseExhaustsPixel = 1; // 2 pixels
 const byte DeflectorDishPixel = 3;
+// Number of pixels for each component
+const byte DrivetrainPixelCount = 4;
+const byte FluxChillerPixelCount = 30;
+const byte ShuttleApproachPixelCount = 16;
 
 // Navigation markers flash on and off, strobes remain 5% or so even when off.
 LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
 
-// A Neopixel Object to manage the series of lights that represent the impulse crystal, impulse exhausts, and deflector
+// Controllers for the series of lights that are physically connected to the controller
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
 NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
-// Neopatterns object to manage the Magnatomic Flux Chiller Grills.
 NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
-// Animators for each component represented by a range of pixels in drivetrain.
+
+// Controllers for the 'logical' subcomponent of the drivetrain and shuttle approach.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
