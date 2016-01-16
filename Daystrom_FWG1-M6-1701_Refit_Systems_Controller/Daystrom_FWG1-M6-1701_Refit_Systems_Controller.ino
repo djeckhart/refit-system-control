@@ -19,14 +19,15 @@ const byte NavigationPin = 9;     // Needs PWM
 const byte FloodlightsPin = 5;    // Needs PWM
 const byte ShuttleApproachPin = 4;
 const byte ButtonPin = 2;         // Digital IO pin connected to the button.
-// The offsets for each component's pixels in the strip.
-const byte ImpulseCrystalPixel = 0;
-const byte ImpulseExhaustsPixel = 1; // 2 pixels
-const byte DeflectorDishPixel = 3;
-// Number of pixels for each component
-const byte DrivetrainPixelCount = 4;
-const byte FluxChillerPixelCount = 30;
-const byte ShuttleApproachPixelCount = 16;
+// The offsets for each component's pixels in the strip. (number of pixels for each component)
+const byte ImpulseCrystalPixel = 0;  // (1 pixel)
+const byte ImpulseExhaustsPixel = 1; // (2 pixel)
+const byte DeflectorDishPixel = 3;   // (1 pixel)
+
+// Length of the Neopixel Chains
+const byte DrivetrainLength = 4;
+const byte FluxChillersLength = 30;
+const byte ShuttleApproachLength = 16;
 
 // Controller for circuits of dumb old LEDs.
 // - Navigation markers flash on and off, strobes remain 5% or so even when off.
@@ -35,9 +36,9 @@ LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // Controllers for the series of lights that are physically connected to the controller
-Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
-NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
+Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainLength, DrivetrainPin, NEO_RGB + NEO_KHZ800);
+NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
+NeoPatterns fluxChillers = NeoPatterns(FluxChillersLength, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 
 // Controllers for the 'logical' subcomponent of the drivetrain and shuttle approach.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
@@ -93,7 +94,7 @@ void setup ()
   // shuttleApproachStarboard.ColorSet(drivetrainBlack);
   // shuttleApproachPort.Direction = REVERSE;
   drivetrain.begin();
-  for (int pxl = 0; pxl < DrivetrainPixelCount; pxl++) {
+  for (int pxl = 0; pxl < DrivetrainLength; pxl++) {
       drivetrain.setPixelColor(pxl, drivetrainBlack);
   }
 }
