@@ -37,8 +37,7 @@ Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, Drivetrai
 NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, NULL);
 // Neopatterns object to manage the Magnatomic Flux Chiller Grills.
 NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
-// Animators for each component represented by a range of pixels in the drivetrain.
-                                                    // (NeoPixel strip, firstPixelIndex, pixelCount, callback);
+// Animators for each component represented by a range of pixels in the drivetrain.,                               // (NeoPixel strip, firstPixelIndex, pixelCount, callback);
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
@@ -196,16 +195,8 @@ void advanceState()
 void beginMatterAntimatterReaction()
 {
   Serial.println("\"Initiating deuterium-antideuterium reacton. Warp core online.\"");
-  impulseCrystal.Fade(drivetrainBlack,
-                      impulseWhite,
-                      255,
-                      10,
-                      FORWARD);
-  deflectorDish.Fade(drivetrainBlack,
-                       impulseWhite,
-                       155,
-                       10,
-                      FORWARD);
+  impulseCrystal.Fade(drivetrainBlack, impulseWhite, 255, 10, FORWARD);
+  deflectorDish.Fade(drivetrainBlack,  impulseWhite,  155,  10, FORWARD);
   floodlights.fade(254, 1200);
 }
 
@@ -216,21 +207,9 @@ void transitionToStandby()
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
   shuttleApproach.Scanner(shuttleApproach.Color(55,55,55), 50);
   // shuttleApproachPort.Scanner(impulseWhite, 50);
-  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
-                      drivetrainBlack,
-                      155,
-                      10,
-                      FORWARD);
-  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel),
-                      impulseWhite,
-                      155,
-                      10,
-                      FORWARD);
-  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),
-                       impulseWhite,
-                       155,
-                       10,
-                      FORWARD);
+  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
+  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
+  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
 }
 
 void transitionToImpulsePower()
@@ -241,22 +220,10 @@ void transitionToImpulsePower()
   shuttleApproach.ColorWipe(drivetrainBlack, 50, FORWARD);
 
   // Turn the Impulse Exhausts Red
-  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
-                      drivetrainRed,
-                      155,
-                      10,
-                      FORWARD);
+  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainRed, 155, 10, FORWARD);
   // Turn the Impulse Crystal Impulse Yellow
-  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel),
-                      impulseWhite,
-                      155,
-                      10,
-                      FORWARD);
-  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),
-                       impulseWhite,
-                       155,
-                       10,
-                      FORWARD);
+  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
+  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  impulseWhite,  155,  10, FORWARD);
 }
 
 void transitionToWarpPower()
@@ -265,21 +232,9 @@ void transitionToWarpPower()
   floodlights.fade(254, 750);
   fluxChillers.OnComplete = &fluxChillersStage1Complete;
   fluxChillers.Fade(drivetrainBlack, fluxChillerBlue, 75, 15, FORWARD);
-  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel),
-                       warpBlue,
-                       225,
-                       10,
-                      FORWARD);
-  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),
-                       warpBlue,
-                       225,
-                       10,
-                      FORWARD);
-  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
-                      drivetrainBlack,
-                      75,
-                      10,
-                      FORWARD);
+  impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel),  warpBlue,  225,  10, FORWARD);
+  deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),  warpBlue,  225,  10, FORWARD);
+  impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 75, 10, FORWARD);
 }
 
 void fluxChillersStage1Complete() {
