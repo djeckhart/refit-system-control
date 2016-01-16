@@ -28,7 +28,8 @@ const byte DrivetrainPixelCount = 4;
 const byte FluxChillerPixelCount = 30;
 const byte ShuttleApproachPixelCount = 16;
 
-// Navigation markers flash on and off, strobes remain 5% or so even when off.
+// Controller for circuits of dumb old LEDs.
+// - Navigation markers flash on and off, strobes remain 5% or so even when off.
 LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,   100, 900, false);
 LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
@@ -52,7 +53,7 @@ uint32_t drivetrainRed = drivetrain.Color(20, 248, 0);
 uint32_t warpBlue = drivetrain.Color(128, 0, 153);
 uint32_t fluxChillerBlue = fluxChillers.Color( 0,159, 255);
 
-// Pieces of the finite state machine.
+// Pieces of the finite state machine and button business.
 enum ShipStates {
   offline,
   wantStandby,
@@ -65,8 +66,9 @@ enum ShipStates {
 ShipStates shipStatus = offline;
 uint16_t lastStateChange = 0;
 uint16_t timeInThisState = 1000;
-uint8_t howMuchMoreOfThisSheCanTake = 0; // which is to say we go to impulse mode before warp
 bool lastButtonState = HIGH;
+// “I’m givin’ her all she’s got, Captain!”
+uint8_t howMuchMoreOfThisSheCanTake = 0; // which is to say we go to impulse mode before warp
 
 void setup ()
 {
