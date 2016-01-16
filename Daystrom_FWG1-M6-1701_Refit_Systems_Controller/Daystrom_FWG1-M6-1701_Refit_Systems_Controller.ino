@@ -12,17 +12,16 @@
 #include "Adafruit_NeoPatterns.h"
 
 // pin assignments
-const byte DrivetrainPin = 12; // Digital IO pin connected to the NeoPixels.
-const byte FluxChillersStripPin = 11;
-const byte StrobesPin = 10; // PWM
-const byte NavigationPin = 9; // PWM
-const byte FluxChillersPin = 6; // PWM
-const byte FloodlightsPin = 5; // PWM
-const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will be
-                            // driven with a pull-up resistor so the switch should
-                            // pull the pin to ground momentarily.  On a high -> low
-                            // transition the button press logic will execute.
+const byte DrivetrainPin = 12; // Digital IO pin connected to NeoPixels.
+const byte FluxChillersPin = 11;  // Digital IO pin connected to NeoPixels.
+const byte StrobesPin = 10; // Needs PWM
+const byte NavigationPin = 9; // Needs PWM
+const byte FloodlightsPin = 5; // Needs PWM
+const byte ShuttleApproachPin = 4; // Needs PWM
+const byte ButtonPin = 2;  // Digital IO pin connected to the button.  This will be driven with a pull-up resistor so the switch should pull the pin to ground momentarily.  On a high -> low transition the button press logic will execute.
 const byte DrivetrainPixelCount = 4;
+const byte FluxChillerPixelCount = 30;
+const byte ShuttleApproachPixelCount = 16;
 // The offset for each component's pixels in the strip.
 const byte ImpulseCrystalPixel = 0;
 const byte ImpulseExhaustsPixel = 1; // 2 pixels
@@ -34,20 +33,24 @@ LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
 LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // A Neopixel Object to manage the series of lights that represent the impulse crystal, impulse exhausts, and deflector
-Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(4, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-NeoPatterns fluxChillers = NeoPatterns(30, FluxChillersStripPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
+Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainPixelCount, DrivetrainPin, NEO_RGB + NEO_KHZ800);
+Adafruit_NeoPixel shuttleApproach = Adafruit_NeoPixel(ShuttleApproachPixelCount, ShuttleApproachPin, NEO_RGB + NEO_KHZ800);
+// Neopatterns object to manage the Magnatomic Flux Chiller Grills.
+NeoPatterns fluxChillers = NeoPatterns(FluxChillerPixelCount, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 // Animators for each component represented by a range of pixels in the drivetrain.
                                                     // (NeoPixel strip, firstPixelIndex, pixelCount, callback);
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
+// NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, 0, 8, &shuttleApproachComplete);
+// NeoPixel_Animator shuttleApproachPort = NeoPixel_Animator(shuttleApproach, 8, 8, &shuttleApproachComplete);
 
-// Colors
+// Colors - Note that these are not TODO: What? Both strips are initialized with NEO_RGB.
 uint32_t drivetrainBlack = drivetrain.Color(0,0,0);
 uint32_t impulseWhite = drivetrain.Color(230, 255, 0);
 uint32_t drivetrainRed = drivetrain.Color(20, 248, 0);
 uint32_t warpBlue = drivetrain.Color(128, 0, 153);
-uint32_t fluxChillerBlue = fluxChillers.Color(128, 0, 153);
+uint32_t fluxChillerBlue = fluxChillers.Color( 0,159, 255);
 
 // Pieces of the finite state machine.
 enum ShipStates {
@@ -71,17 +74,27 @@ void setup ()
   pinMode(FloodlightsPin, OUTPUT);
   pinMode(NavigationPin, OUTPUT);
   pinMode(StrobesPin, OUTPUT);
+  pinMode(FluxChillersPin, OUTPUT);
+  pinMode(DrivetrainPin, OUTPUT);
+  pinMode(ShuttleApproachPin, OUTPUT);
   pinMode(ButtonPin, INPUT_PULLUP);
   strobes.begin();
   strobes.off();
   navigationMarkers.begin();
   navigationMarkers.off();
-  drivetrain.begin();
-  fluxChillers.begin();
-  fluxChillers.ColorSet(drivetrainBlack);
   floodlights.set_value(255);
   floodlights.set_curve(Curve::exponential);
+  fluxChillers.begin();
+  fluxChillers.ColorSet(drivetrainBlack);
+  // shuttleApproach.begin();
+  // shuttleApproachPort.ColorSet(drivetrainBlack);
+  // shuttleApproachStarboard.ColorSet(drivetrainBlack);
+  // shuttleApproachPort.Direction = REVERSE;
+  drivetrain.begin();
+  for (int pxl = 0; pxl < DrivetrainPixelCount; pxl++) {
+      drivetrain.setPixelColor(pxl, drivetrainBlack);
   }
+}
 
 void loop ()
 {
@@ -98,6 +111,8 @@ void loop ()
   impulseExhausts.Update();
   deflectorDish.Update();
   fluxChillers.Update();
+  // shuttleApproachStarboard.Update();
+  // shuttleApproachPort.Update();
   drivetrain.show();
 }  // end of loop
 
@@ -180,7 +195,7 @@ void advanceState()
 
 void beginMatterAntimatterReaction()
 {
-  Serial.println("Initiating deuterium-antideuterium reacton.");
+  Serial.println("\"Initiating deuterium-antideuterium reacton. Warp core online.\"");
   impulseCrystal.Fade(drivetrainBlack,
                       impulseWhite,
                       255,
@@ -196,9 +211,11 @@ void beginMatterAntimatterReaction()
 
 void transitionToStandby()
 {
-  Serial.println("Standing By. Shuttle Approach Ready.");
+  Serial.println("\"Standing By. Shuttle Approach Ready.\"");
   floodlights.fade(0, 1200);
-  fluxChillers.Fade(drivetrain.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
+  // shuttleApproachStarboard.Scanner(impulseWhite, 50);
+  // shuttleApproachPort.Scanner(impulseWhite, 50);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
                       drivetrainBlack,
                       155,
@@ -220,6 +237,9 @@ void transitionToImpulsePower()
 {
   Serial.println("\"Impulse engines engaged, Captain.\"");
   floodlights.fade(254, 750);
+  // shuttleApproachStarboard.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, FORWARD);
+  // shuttleApproachPort.Fade(shuttleApproach.getPixelColor(0), drivetrainBlack, 125, 5, REVERSE);
+
   // Turn the Impulse Exhausts Red
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
                       drivetrainRed,
@@ -243,26 +263,41 @@ void transitionToWarpPower()
 {
   Serial.println("\"Warp speed at your command.\"");
   floodlights.fade(254, 750);
-  fluxChillers.TheaterChase(drivetrainBlack, fluxChillerBlue, 50, REVERSE);
-
+  fluxChillers.OnComplete = &fluxChillersStage1Complete;
+  fluxChillers.Fade(drivetrainBlack, fluxChillerBlue, 75, 15, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel),
                        warpBlue,
-                       155,
+                       225,
                        10,
                       FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel),
                        warpBlue,
-                       155,
+                       225,
                        10,
                       FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel),
                       drivetrainBlack,
-                      155,
+                      75,
                       10,
                       FORWARD);
 }
 
-void fluxChillersComplete(){};
+void fluxChillersStage1Complete() {
+  fluxChillers.OnComplete = &fluxChillersStage2Complete;
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
+}
+
+void fluxChillersStage2Complete() {
+  fluxChillers.OnComplete = &fluxChillersComplete;
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), warpBlue, 75, 5, FORWARD);
+}
+
+void fluxChillersComplete(){
+  fluxChillers.ActivePattern = NONE;
+};
+
+void shuttleApproachComplete(){};
+
 void impulseCrystalComplete()
 {
     // Serial.println("impulseCrystalComplete()");
