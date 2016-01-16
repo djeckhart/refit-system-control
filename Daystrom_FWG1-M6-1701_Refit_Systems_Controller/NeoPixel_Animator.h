@@ -1,6 +1,5 @@
 #pragma once
-// NeoPixel Animator derived from the Adafruit_NeoPixel class to operate on only a subset of a strip's pixels.
-// #include <Arduino.h>
+// Derived from the NeoPattern class to operate on only a subset of a strip's pixels.
 // https://learn.adafruit.com/multi-tasking-the-arduino-part-3/using-neopatterns
 //
 #include "Adafruit_NeoPatterns.h" // for patterns and direction definitions
