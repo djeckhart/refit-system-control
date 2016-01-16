@@ -27,7 +27,7 @@ const byte DeflectorDishPixel = 3;   // (1 pixel)
 // Length of the Neopixel Chains
 const byte DrivetrainLength = 4;
 const byte FluxChillersLength = 30;
-const byte ShuttleApproachLength = 16;
+const byte ShuttleApproachLength = 32;
 
 // Controller for circuits of dumb old LEDs.
 // - Navigation markers flash on and off, strobes remain 5% or so even when off.
@@ -37,14 +37,14 @@ LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // Controllers for the strands of Neopixels connected to the Arduino.
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainLength, DrivetrainPin, NEO_RGB + NEO_KHZ800);
-NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
+Adafruit_NeoPixel shuttleApproach = Adafruit_NeoPixel(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800);
 NeoPatterns fluxChillers = NeoPatterns(FluxChillersLength, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 
 // Controllers for the “logical” subcomponents of the drivetrain and shuttle approach.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
 NeoPixel_Animator impulseExhausts = NeoPixel_Animator(drivetrain, ImpulseExhaustsPixel, 2, &impulseExhaustsComplete);
 NeoPixel_Animator deflectorDish = NeoPixel_Animator(drivetrain, DeflectorDishPixel, 2, &deflectorDishComplete);
-// NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, 0, 8, &shuttleApproachComplete);
+// NeoPixel_Animator shuttleApproachStarboard = NeoPixel_Animator(shuttleApproach, 0, 16, &shuttleApproachComplete);
 // NeoPixel_Animator shuttleApproachPort = NeoPixel_Animator(shuttleApproach, 0, 16, &shuttleApproachComplete);
 
 // Colors - Note that these are not TODO: What? Both strips are initialized with NEO_RGB.
