@@ -18,7 +18,7 @@ void NeoPatterns::Increment()
             Index = 0;
             if (OnComplete != NULL)
             {
-                OnComplete(); // call the comlpetion callback
+                OnComplete(); // call the completion callback
             }
         }
     }
@@ -30,7 +30,7 @@ void NeoPatterns::Increment()
             Index = TotalSteps-1;
             if (OnComplete != NULL)
             {
-                OnComplete(); // call the comlpetion callback
+                OnComplete(); // call the completion callback
             }
         }
     }
@@ -159,13 +159,18 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
     ActivePattern = SHUTTLE;
     Interval = interval;
     TotalSteps = (numPixels() / 2);
-    Color1 = Color(50, 50, 50);
+    Color1 = Color(25, 25, 25);
     Index = 0;
 }
 
 // Update the ShuttleApproach Pattern
 void NeoPatterns::ShuttleApproachUpdate()
 {
+  if (Index % 5 == 0) {
+    setPixelColor(15, DimColor(Wheel(60)));
+    setPixelColor(16, DimColor(Wheel(60)));
+  }
+
   for (int i = 0; i < numPixels(); i++)
   {
       int j = abs(numPixels()-i) - 1;
@@ -180,6 +185,7 @@ void NeoPatterns::ShuttleApproachUpdate()
            setPixelColor(j, DimColor(getPixelColor(j)));
       }
   }
+
   show();
   Increment();
 }
