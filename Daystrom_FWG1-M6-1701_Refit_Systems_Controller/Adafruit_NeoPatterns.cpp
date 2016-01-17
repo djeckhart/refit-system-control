@@ -158,7 +158,7 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
 {
     ActivePattern = SHUTTLE;
     Interval = interval;
-    TotalSteps = numPixels / 2;
+    TotalSteps = (numPixels() / 2);
     Color1 = Color(50, 50, 50);
     Index = 0;
 }
@@ -166,7 +166,20 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
 // Update the ShuttleApproach Pattern
 void NeoPatterns::ShuttleApproachUpdate()
 {
-  setPixelColor(Index, Color1);
+  for (int i = 0; i < numPixels(); i++)
+  {
+      int j = abs(numPixels()-i) - 1;
+      if (i == Index)  // Scan Pixel to the right
+      {
+           setPixelColor(i, Color1);
+           setPixelColor(j, Color1);
+      }
+      else // Fading tail
+      {
+           setPixelColor(i, DimColor(getPixelColor(i)));
+           setPixelColor(j, DimColor(getPixelColor(j)));
+      }
+  }
   show();
   Increment();
 }
@@ -273,6 +286,9 @@ void NeoPatterns::Update()
                 break;
             case SCANNER:
                 ScannerUpdate();
+                break;
+            case SHUTTLE:
+                ShuttleApproachUpdate();
                 break;
             case FADE:
                 FadeUpdate();
