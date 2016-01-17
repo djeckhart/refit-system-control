@@ -207,7 +207,7 @@ void transitionToStandby()
   Serial.println("\"Standing By. Shuttle Approach Ready.\"");
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), impulseWhite, 155, 10, FORWARD);
   fluxChillers.OnComplete = &disengageWarpDriveComplete;
-  fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 155, 10, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 80, 10, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
 }
@@ -236,7 +236,7 @@ void transitionToWarpPower()
   Serial.println("\"Warp speed at your command.\"");
   floodlights.fade(254, 750);
   fluxChillers.OnComplete = &engageWarpIntermixStage0Complete;
-  fluxChillers.ColorWipe(fluxChilllerViolet, 15, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), warpBlue, 225, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), warpBlue, 225, 10, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 75, 10, FORWARD);

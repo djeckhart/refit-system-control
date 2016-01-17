@@ -166,10 +166,7 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
 // Update the ShuttleApproach Pattern
 void NeoPatterns::ShuttleApproachUpdate()
 {
-  if (Index % 5 == 0) {
-    setPixelColor(15, DimColor(Wheel(60)));
-    setPixelColor(16, DimColor(Wheel(60)));
-  }
+
 
   for (int i = 0; i < numPixels(); i++)
   {
@@ -184,6 +181,13 @@ void NeoPatterns::ShuttleApproachUpdate()
            setPixelColor(i, DimColor(getPixelColor(i)));
            setPixelColor(j, DimColor(getPixelColor(j)));
       }
+  }
+
+  if (Index % 5 == 0) {
+    setPixelColor(15, DimColor(Wheel(60)));
+    setPixelColor(16, DimColor(Wheel(60)));
+    setPixelColor(0, DimColor(Wheel(20)));
+    setPixelColor(31, DimColor(Wheel(20)));
   }
 
   show();
