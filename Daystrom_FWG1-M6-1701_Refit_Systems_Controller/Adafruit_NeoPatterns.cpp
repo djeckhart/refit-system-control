@@ -153,6 +153,24 @@ void NeoPatterns::ScannerUpdate()
     Increment();
 }
 
+// Initialize for a SHUTTLE
+void NeoPatterns::ShuttleApproach(uint8_t interval)
+{
+    ActivePattern = SHUTTLE;
+    Interval = interval;
+    TotalSteps = numPixels / 2;
+    Color1 = Color(50, 50, 50);
+    Index = 0;
+}
+
+// Update the ShuttleApproach Pattern
+void NeoPatterns::ShuttleApproachUpdate()
+{
+  setPixelColor(Index, Color1);
+  show();
+  Increment();
+}
+
 // Initialize for a Fade
 void NeoPatterns::Fade(uint32_t color1, uint32_t color2, uint16_t steps, uint8_t interval, direction dir = FORWARD)
 {

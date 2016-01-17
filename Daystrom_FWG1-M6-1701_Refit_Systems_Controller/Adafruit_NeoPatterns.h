@@ -4,7 +4,7 @@
 // https://learn.adafruit.com/multi-tasking-the-arduino-part-3/using-neopatterns
 //
 // Pattern types supported:
-enum pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE };
+enum pattern { NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, SHUTTLE, FADE };
 // Patern directions supported:
 enum direction { FORWARD, REVERSE };
 
@@ -39,6 +39,8 @@ class NeoPatterns : public Adafruit_NeoPixel
     void ColorWipeUpdate();
     void Scanner(uint32_t color1, uint8_t interval);
     void ScannerUpdate();
+    void ShuttleApproach(uint8_t interval);
+    void ShuttleApproachUpdate();
     void Fade(uint32_t color1, uint32_t color2, uint16_t steps, uint8_t interval, direction dir);
     void FadeUpdate();
     void ColorSet(uint32_t color);
