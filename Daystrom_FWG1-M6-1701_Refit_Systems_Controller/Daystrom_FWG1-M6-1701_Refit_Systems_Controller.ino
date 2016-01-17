@@ -69,7 +69,6 @@ ShipStates shipStatus = offline;
 uint16_t lastStateChange = 0;
 uint16_t timeInThisState = 1000;
 bool lastButtonState = HIGH;
-// “I’m givin’ her all she’s got, Captain!”
 uint8_t howMuchMoreOfThisSheCanTake = 0;
 
 void setup ()
@@ -274,3 +273,5 @@ void deflectorDishComplete()
   // Serial.println("deflectorDishComplete()");
   deflectorDish.ActivePattern = NONE;
 }
+
+// “I’m givin’ her all she’s got, Captain!”
