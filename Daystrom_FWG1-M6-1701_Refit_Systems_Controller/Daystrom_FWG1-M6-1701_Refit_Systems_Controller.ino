@@ -2,6 +2,7 @@
  * Daystrom FWG1-M6-1701 Refit Systems Controller
  * Author: Frankie Winters
  * License: WTFPL
+ * ./arduino-builder -hardware ./hardware -tools ./hardware/tools/avr -tools ./tools-builder -libraries ./libraries -fqbn arduino:avr:nano ~/Documents/repositories/refit-system-control/Daystrom_FWG1-M6-1701_Refit_Systems_Controller/Daystrom_FWG1-M6-1701_Refit_Systems_Controller.ino
  */
 #include "Curve.h"
 #include "LEDFader.h"
@@ -13,10 +14,10 @@
 
 // Pin assignments
 const byte DrivetrainPin = 12;     // Digital IO pin connected to NeoPixels.
-const byte FluxChillersPin = 11;   // Digital IO pin connected to NeoPixels.
-const byte StrobesPin = 10;        // Needs PWM
-const byte NavigationPin = 9;      // Needs PWM
-const byte FloodlightsPin = 5;     // Needs PWM
+const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFETS
+const byte StrobesPin = 10;        // Needs PWM connected to MOSFETS
+const byte NavigationPin = 9;      // Needs PWM connected to MOSFETS
+const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
 const byte ShuttleApproachPin = 4; // Digital IO pin connected to the button.
 const byte ButtonPin = 2;          // Digital IO pin connected to NeoPixels.
 
@@ -35,7 +36,7 @@ const byte ShuttleApproachLength = 32;
 LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,  100, 900, false);
 // - Navigation markers flash on and off
 LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
-// - I haven't been bothered to mess about sequential floodlights
+// - I haven't been bothered to mess about with sequential floodlights
 LEDFader floodlights = LEDFader(FloodlightsPin);
 
 // Controllers for the strands of Neopixels connected to the Arduino.
@@ -88,6 +89,7 @@ void setup ()
   floodlights.set_value(255);
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
+  // fluxChillers.setBrightness(127);
   fluxChillers.ColorSet(drivetrainBlack);
   shuttleApproach.begin();
   shuttleApproach.ColorSet(drivetrainBlack);
@@ -215,7 +217,7 @@ void transitionToStandby()
 void disengageWarpDriveComplete()
 {
   fluxChillers.OnComplete = &fluxChillersComplete;
-  fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 155, 10, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 80, 10, FORWARD);
   floodlights.fade(0, 1200);
   shuttleApproach.OnComplete = NULL;
   shuttleApproach.ShuttleApproach(125);

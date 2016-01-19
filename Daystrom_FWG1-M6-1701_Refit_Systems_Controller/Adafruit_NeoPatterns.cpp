@@ -163,11 +163,28 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
     Index = 0;
 }
 
+bool isvalueinarray(int val, int *arr, int size){
+    int i;
+    for (i=0; i < size; i++) {
+        if (arr[i] == val)
+            return true;
+    }
+    return false;
+}
 // Update the ShuttleApproach Pattern
 void NeoPatterns::ShuttleApproachUpdate()
 {
-
-
+  // Corner marker flashers
+  int markers[] = { 0, 31, 15, 16 };
+  if (!isvalueinarray(Index, markers, 32)){
+    if (Index % 5 == 0) {
+      setPixelColor(markers[0], Wheel(20)); // green
+      setPixelColor(markers[1], Wheel(20));
+      setPixelColor(markers[2], Wheel(60)); // orange
+      setPixelColor(markers[3], Wheel(60));
+    }
+  }
+  // Front->back chasers
   for (int i = 0; i < numPixels(); i++)
   {
       int j = abs(numPixels()-i) - 1;
@@ -182,14 +199,6 @@ void NeoPatterns::ShuttleApproachUpdate()
            setPixelColor(j, DimColor(getPixelColor(j)));
       }
   }
-
-  if (Index % 5 == 0) {
-    setPixelColor(15, DimColor(Wheel(60)));
-    setPixelColor(16, DimColor(Wheel(60)));
-    setPixelColor(0, DimColor(Wheel(20)));
-    setPixelColor(31, DimColor(Wheel(20)));
-  }
-
   show();
   Increment();
 }
