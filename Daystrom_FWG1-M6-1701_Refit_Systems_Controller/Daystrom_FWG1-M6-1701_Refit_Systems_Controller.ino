@@ -13,12 +13,12 @@
 #include "Adafruit_NeoPatterns.h"
 
 // Pin assignments
-const byte DrivetrainPin = 12;     // Digital IO pin connected to NeoPixels.
 const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFETS
 const byte StrobesPin = 10;        // Needs PWM connected to MOSFETS
 const byte NavigationPin = 9;      // Needs PWM connected to MOSFETS
 const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
 const byte ShuttleApproachPin = 4; // Digital IO pin connected to the button.
+const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
 const byte ButtonPin = 2;          // Digital IO pin connected to NeoPixels.
 
 // The offsets for each component's pixels in the strip. (number of pixels for each component)
