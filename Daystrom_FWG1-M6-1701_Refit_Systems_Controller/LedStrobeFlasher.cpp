@@ -20,7 +20,7 @@ LedStrobeFlasher::LedStrobeFlasher (const byte pin, const unsigned long timeOff,
 void LedStrobeFlasher::begin ()
   {
   pinMode (pin_, OUTPUT);
-  digitalWrite (pin_, LOW);
+  digitalWrite (pin_, HIGH);
   startTime_ = millis ();
   }  // end of LedStrobeFlasher::begin
 
@@ -29,7 +29,7 @@ void LedStrobeFlasher::update ()
   {
   // do nothing if not active
   if (!active_) {
-    analogWrite(pin_, 255);
+    digitalWrite (pin_, LOW);
     return;
   }
 
@@ -39,13 +39,13 @@ void LedStrobeFlasher::update ()
     {
     if (oscillator_ == true)
       {
-      analogWrite(pin_, 85);
+      analogWrite(pin_, 255);
       currentInterval_ = timeOff_;
       oscillator_ = false;
       }
     else
       {
-      analogWrite(pin_, 250);
+      analogWrite(pin_, 20);
       currentInterval_ = timeOn_;
       oscillator_ = true;
       }
@@ -66,7 +66,7 @@ void LedStrobeFlasher::update ()
  void LedStrobeFlasher::off ()
    {
    active_ = false;
-   digitalWrite(pin_, LOW);
+   digitalWrite(pin_, HIGH);
    }  // end of LedStrobeFlasher::off
 
  // is it active?

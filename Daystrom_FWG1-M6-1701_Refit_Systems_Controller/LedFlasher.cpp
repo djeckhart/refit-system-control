@@ -83,7 +83,7 @@ void LedFlasher::update ()
   {
   // do nothing if not active
   if (!active_) {
-    digitalWrite(pin_, HIGH);
+    digitalWrite(pin_, LOW);
     return;
   }
 

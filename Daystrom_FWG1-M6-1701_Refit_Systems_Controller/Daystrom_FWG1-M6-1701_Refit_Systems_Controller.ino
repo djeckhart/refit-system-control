@@ -13,9 +13,9 @@
 #include "Adafruit_NeoPatterns.h"
 
 // Pin assignments
-const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFETS
-const byte StrobesPin = 10;        // Needs PWM connected to MOSFETS
-const byte NavigationPin = 9;      // Needs PWM connected to MOSFETS
+const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFET
+const byte StrobesPin = 10;        // Needs PWM connected to MOSFET
+const byte NavigationPin = 9;      // Needs PWM connected to MOSFET
 const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
 const byte ShuttleApproachPin = 4; // Digital IO pin connected to the button.
 const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
@@ -35,7 +35,7 @@ const byte ShuttleApproachLength = 32;
 // - Strobes remain 5% or so even when off.
 LedStrobeFlasher strobes = LedStrobeFlasher(StrobesPin,  100, 900, false);
 // - Navigation markers flash on and off
-LedFlasher navigationMarkers = LedFlasher(NavigationPin, 1000, 3000, false);
+LedFlasher navigationMarkers = LedFlasher(NavigationPin, 3000, 1000, false);
 // - I haven't been bothered to mess about with sequential floodlights
 LEDFader floodlights = LEDFader(FloodlightsPin);
 
