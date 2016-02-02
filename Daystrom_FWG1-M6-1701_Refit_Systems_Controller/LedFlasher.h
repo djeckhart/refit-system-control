@@ -2,12 +2,12 @@
 
 #include <Arduino.h>
 
-class LedStrobeFlasher
+class LedFlasher
   {
   public:
 
     // constructor
-    LedStrobeFlasher (const byte pin, const unsigned long timeOff, const unsigned long timeOn, const bool active = true);
+    LedFlasher (const byte pin, const unsigned long timeOff, const unsigned long timeOn, const bool active = true);
 
     void begin ();
     void update ();
@@ -25,4 +25,4 @@ class LedStrobeFlasher
      unsigned long currentInterval_;  // time till we change state
      unsigned long startTime_;        // when we last changed state
 
-  };  // end of LedStrobeFlasher class
+  };  // end of LedFlasher class
