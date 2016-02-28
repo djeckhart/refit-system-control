@@ -17,9 +17,9 @@ const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFET
 const byte StrobesPin = 10;        // Needs PWM connected to MOSFET
 const byte NavigationPin = 9;      // Needs PWM connected to MOSFET
 const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
-const byte ShuttleApproachPin = 4; // Digital IO pin connected to the button.
+const byte ShuttleApproachPin = 4; // Digital IO pin connected to NeoPixels.
 const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
-const byte ButtonPin = 2;          // Digital IO pin connected to NeoPixels.
+const byte ButtonPin = 2;          // Digital IO pin connected to the button.
 
 // The offsets for each component's pixels in the strip. (number of pixels for each component)
 const byte ImpulseCrystalPixel = 0;   // (1 pixel)
@@ -58,16 +58,16 @@ uint32_t fluxChilllerViolet = fluxChillers.Color(0, 159, 255);
 
 // Pieces of the finite state machine and button business.
 enum ShipStates {
-  offline,
-  wantStandby,
-  wantNavigation,
-  wantStrobes,
-  wantImpulse,
-  wantWarp,
-  steadyAsSheGoes
+  offline = 0,
+  wantStandby = 1,
+  wantNavigation = 2,
+  wantStrobes = 3,
+  wantImpulse = 4,
+  wantWarp = 5,
+  steadyAsSheGoes = 6
 };
 ShipStates shipStatus = offline;
-uint16_t lastStateChange = 0;
+uint32_t lastStateChange = 0;
 uint16_t timeInThisState = 1000;
 bool lastButtonState = HIGH;
 uint8_t howMuchMoreOfThisSheCanTake = 0;
@@ -81,12 +81,12 @@ void setup ()
   pinMode(FluxChillersPin, OUTPUT);
   pinMode(DrivetrainPin, OUTPUT);
   pinMode(ShuttleApproachPin, OUTPUT);
-  pinMode(ButtonPin, INPUT_PULLUP);
+  pinMode(ButtonPin, INPUT);
   strobes.begin();
   strobes.off();
   navigationMarkers.begin();
   navigationMarkers.off();
-  floodlights.set_value(255);
+  floodlights.set_value(0);
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
   // fluxChillers.setBrightness(127);
@@ -105,8 +105,11 @@ void loop ()
   {
     doStateChange ();
   }
-  // update faders, flashers
-  readButton();
+  // readButton();
+  if (Serial.available()) {
+    advanceState();
+    Serial.read();
+  }
   navigationMarkers.update();
   floodlights.update();
   strobes.update();
@@ -114,14 +117,14 @@ void loop ()
   impulseExhausts.Update();
   deflectorDish.Update();
   fluxChillers.Update();
-  // shuttleApproachStarboard.Update();
   shuttleApproach.Update();
   drivetrain.show();
 }  // end of loop
 
 void readButton()
 {
-    // This will be driven INPUT so the switch should pull the pin to ground momentarily.  On a high -> low transition the button press logic will execute.
+    // The pin is configureed with INPUT_PULLUP, sho it should stay high until so the closing the switch pulls the pin to ground momentarily.
+    // On a high -> low transition the button press logic will execute.
     // Get current button state.
     bool buttonState = digitalRead(ButtonPin);
     // Check if state changed from high to low (button press).
@@ -140,24 +143,27 @@ void readButton()
 
 void doStateChange ()
 {
-  lastStateChange = millis ();    // when we last changed states
+  lastStateChange = millis();    // when we last changed states
   timeInThisState = 1000;         // default one second between states
+  // Serial.println("doStateChange");
   switch (shipStatus)
   {
     case offline:
+      Serial.println("systems online");
       beginMatterAntimatterReaction();
-      timeInThisState = 2000;
       shipStatus = wantNavigation;
       break;
 
     case wantNavigation:
       navigationMarkers.on();
+      Serial.println("navigationMarkers ON");
       timeInThisState = 2000;
       shipStatus = wantStrobes;
       break;
 
     case wantStrobes:
       strobes.on();
+      Serial.println("strobes ON");
       shipStatus = steadyAsSheGoes;
       break;
 
@@ -177,6 +183,8 @@ void doStateChange ()
       break;
 
     case steadyAsSheGoes:
+      // Serial.print("steadyAsSheGoes: ");
+      // Serial.println(millis());
       //transitionToImpulsePower();
       break;
   }  // end of switch on shipStatus
@@ -184,6 +192,12 @@ void doStateChange ()
 
 void advanceState()
 {
+  if (shipStatus != steadyAsSheGoes ){
+      Serial.println("come back when we're ready");
+      return;
+  }
+  Serial.println("advance state");
+
   howMuchMoreOfThisSheCanTake++;
   if (howMuchMoreOfThisSheCanTake == 1) {
     shipStatus = wantImpulse;
@@ -193,7 +207,6 @@ void advanceState()
     shipStatus = wantStandby;
     howMuchMoreOfThisSheCanTake = 0;
   }
-  doStateChange();
  }
 
 void beginMatterAntimatterReaction()
@@ -201,12 +214,11 @@ void beginMatterAntimatterReaction()
   Serial.println("\"Initiating deuterium-antideuterium reacton. Warp core online.\"");
   impulseCrystal.Fade(drivetrainBlack, impulseWhite, 255, 10, FORWARD);
   deflectorDish.Fade(drivetrainBlack, impulseWhite, 155, 10, FORWARD);
-  floodlights.fade(254, 1200);
 }
 
 void transitionToStandby()
 {
-  Serial.println("\"Standing By. Shuttle Approach Ready.\"");
+  Serial.println("\"Standing By.\"");
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), impulseWhite, 155, 10, FORWARD);
   fluxChillers.OnComplete = &disengageWarpDriveComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 80, 10, FORWARD);
@@ -218,15 +230,16 @@ void disengageWarpDriveComplete()
 {
   fluxChillers.OnComplete = &fluxChillersComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 80, 10, FORWARD);
-  floodlights.fade(0, 1200);
+  floodlights.fade(250, 1200);
   shuttleApproach.OnComplete = NULL;
   shuttleApproach.ShuttleApproach(125);
+  Serial.println("\"Shuttle Approach Ready.\"");
 }
 
 void transitionToImpulsePower()
 {
   Serial.println("\"Impulse engines engaged, Captain.\"");
-  floodlights.fade(254, 750);
+  floodlights.fade(0, 750);
   shuttleApproach.OnComplete = &shuttleApproachComplete;
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainRed, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
@@ -236,7 +249,7 @@ void transitionToImpulsePower()
 void transitionToWarpPower()
 {
   Serial.println("\"Warp speed at your command.\"");
-  floodlights.fade(254, 750);
+  floodlights.fade(0, 750);
   fluxChillers.OnComplete = &engageWarpIntermixStage0Complete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), warpBlue, 225, 10, FORWARD);
