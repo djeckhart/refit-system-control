@@ -11,6 +11,7 @@
 #include "Adafruit_NeoPixel.h"
 #include "NeoPixel_Animator.h"
 #include "Adafruit_NeoPatterns.h"
+#include "OneButton.h"
 
 // Pin assignments
 const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFET
@@ -19,7 +20,7 @@ const byte NavigationPin = 9;      // Needs PWM connected to MOSFET
 const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
 const byte ShuttleApproachPin = 4; // Digital IO pin connected to NeoPixels.
 const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
-const byte ButtonPin = 2;          // Digital IO pin connected to the button.
+const byte ButtonPin = 2;          //
 
 // The offsets for each component's pixels in the strip. (number of pixels for each component)
 const byte ImpulseCrystalPixel = 0;   // (1 pixel)
@@ -57,6 +58,7 @@ uint32_t warpBlue = drivetrain.Color(128, 0, 153);
 uint32_t fluxChilllerViolet = fluxChillers.Color(0, 159, 255);
 
 // Pieces of the finite state machine and button business.
+// OneButton modeButton = OneButton(ButtonPin, true);
 enum ShipStates {
   offline = 0,
   wantStandby = 1,
@@ -64,13 +66,15 @@ enum ShipStates {
   wantStrobes = 3,
   wantImpulse = 4,
   wantWarp = 5,
-  steadyAsSheGoes = 6
+  steadyAsSheGoes = 6,
+  encounteredAnomaly = 7
 };
 ShipStates shipStatus = offline;
 uint32_t lastStateChange = 0;
 uint16_t timeInThisState = 1000;
-bool lastButtonState = HIGH;
 uint8_t howMuchMoreOfThisSheCanTake = 0;
+uint32_t missionInception = 0;
+uint32_t missionDuration = 0;
 
 void setup ()
 {
@@ -82,6 +86,10 @@ void setup ()
   pinMode(DrivetrainPin, OUTPUT);
   pinMode(ShuttleApproachPin, OUTPUT);
   pinMode(ButtonPin, INPUT);
+  // digitalWrite(ButtonPin, HIGH);
+  // attachInterrupt(digitalPinToInterrupt(ButtonPin), advanceState, FALLING);
+  // modeButton.attachClick(advanceState);
+  // modeButton.attachDoubleClick();
   strobes.begin();
   strobes.off();
   navigationMarkers.begin();
@@ -89,9 +97,9 @@ void setup ()
   floodlights.set_value(0);
   floodlights.set_curve(Curve::exponential);
   fluxChillers.begin();
-  // fluxChillers.setBrightness(127);
   fluxChillers.ColorSet(drivetrainBlack);
   shuttleApproach.begin();
+  shuttleApproach.Reverse();
   shuttleApproach.ColorSet(drivetrainBlack);
   drivetrain.begin();
   for (int pxl = 0; pxl < DrivetrainLength; pxl++) {
@@ -101,15 +109,11 @@ void setup ()
 
 void loop ()
 {
-  if (millis () - lastStateChange >= timeInThisState)
+  if (millis() - lastStateChange >= timeInThisState)
   {
     doStateChange ();
   }
-  // readButton();
-  if (Serial.available()) {
-    advanceState();
-    Serial.read();
-  }
+  // modeButton.tick();
   navigationMarkers.update();
   floodlights.update();
   strobes.update();
@@ -121,49 +125,29 @@ void loop ()
   drivetrain.show();
 }  // end of loop
 
-void readButton()
-{
-    // The pin is configureed with INPUT_PULLUP, sho it should stay high until so the closing the switch pulls the pin to ground momentarily.
-    // On a high -> low transition the button press logic will execute.
-    // Get current button state.
-    bool buttonState = digitalRead(ButtonPin);
-    // Check if state changed from high to low (button press).
-    if (buttonState == LOW && lastButtonState == HIGH) {
-      // Short delay to debounce button.
-      delay(20);
-      // Check if button is still low after debounce.
-      buttonState = digitalRead(ButtonPin);
-      if (buttonState == LOW) {
-        advanceState();
-      }
-    }
-    // Set the last button state to the old state.
-    lastButtonState = buttonState;
-}
-
 void doStateChange ()
 {
   lastStateChange = millis();    // when we last changed states
-  timeInThisState = 1000;         // default one second between states
-  // Serial.println("doStateChange");
+  timeInThisState = 1000;        // default one second between states
+
   switch (shipStatus)
   {
     case offline:
-      Serial.println("systems online");
+      Serial.println("Core Systems Online");
       beginMatterAntimatterReaction();
       shipStatus = wantNavigation;
       break;
 
     case wantNavigation:
+      Serial.println("Navigation Markers");
       navigationMarkers.on();
-      Serial.println("navigationMarkers ON");
       timeInThisState = 2000;
       shipStatus = wantStrobes;
       break;
 
     case wantStrobes:
+      Serial.println("Strobes");
       strobes.on();
-      Serial.println("strobes ON");
       shipStatus = steadyAsSheGoes;
       break;
 
@@ -183,8 +167,12 @@ void doStateChange ()
       break;
 
     case steadyAsSheGoes:
-      // Serial.print("steadyAsSheGoes: ");
-      // Serial.println(millis());
+      // Serial.print("Steady as she goes...");
+      // missionDuration = ; //
+      if (lastStateChange - missionInception > 10000) {
+        Serial.println("\"We appear to have encountered an anomaly.\"");
+        advanceState();
+      }
       //transitionToImpulsePower();
       break;
   }  // end of switch on shipStatus
@@ -193,21 +181,25 @@ void doStateChange ()
 void advanceState()
 {
   if (shipStatus != steadyAsSheGoes ){
-      Serial.println("come back when we're ready");
-      return;
-  }
-  Serial.println("advance state");
+    Serial.println("come back when we're ready");
+  } else if (shipStatus == steadyAsSheGoes) {
 
-  howMuchMoreOfThisSheCanTake++;
-  if (howMuchMoreOfThisSheCanTake == 1) {
-    shipStatus = wantImpulse;
-  } else if (howMuchMoreOfThisSheCanTake == 2){
-    shipStatus = wantWarp;
-  } else {
-    shipStatus = wantStandby;
-    howMuchMoreOfThisSheCanTake = 0;
+    missionInception = millis();
+
+    Serial.println("advance state");
+    howMuchMoreOfThisSheCanTake++;
+    if (howMuchMoreOfThisSheCanTake == 1) {
+      shipStatus = wantImpulse;
+    } else if (howMuchMoreOfThisSheCanTake == 2){
+      shipStatus = wantWarp;
+    } else {
+      shipStatus = wantStandby;
+      howMuchMoreOfThisSheCanTake = 0;
+    }
+
+
   }
- }
+}
 
 void beginMatterAntimatterReaction()
 {
@@ -218,7 +210,7 @@ void beginMatterAntimatterReaction()
 
 void transitionToStandby()
 {
-  Serial.println("\"Standing By.\"");
+  Serial.print("\"Standing By.");
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), impulseWhite, 155, 10, FORWARD);
   fluxChillers.OnComplete = &disengageWarpDriveComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 80, 10, FORWARD);
@@ -232,8 +224,8 @@ void disengageWarpDriveComplete()
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 80, 10, FORWARD);
   floodlights.fade(250, 1200);
   shuttleApproach.OnComplete = NULL;
-  shuttleApproach.ShuttleApproach(125);
-  Serial.println("\"Shuttle Approach Ready.\"");
+  shuttleApproach.ShuttleApproach(120);
+  Serial.println(" Shuttle Approach Ready.\"");
 }
 
 void transitionToImpulsePower()
@@ -251,7 +243,7 @@ void transitionToWarpPower()
   Serial.println("\"Warp speed at your command.\"");
   floodlights.fade(0, 750);
   fluxChillers.OnComplete = &engageWarpIntermixStage0Complete;
-  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 155, 10, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 75, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), warpBlue, 225, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), warpBlue, 225, 10, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 75, 10, FORWARD);
