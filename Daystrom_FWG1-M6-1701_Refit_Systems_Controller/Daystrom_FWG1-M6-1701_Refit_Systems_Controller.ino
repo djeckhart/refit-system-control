@@ -18,6 +18,7 @@ const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFET
 const byte StrobesPin = 10;        // Needs PWM connected to MOSFET
 const byte NavigationPin = 9;      // Needs PWM connected to MOSFET
 const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
+const byte FluxChillers2Pin = 5;    // Digital IO pin connected to NeoPixels.
 const byte ShuttleApproachPin = 4; // Digital IO pin connected to NeoPixels.
 const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
 const byte ButtonPin = 2;          //
@@ -44,6 +45,7 @@ LEDFader floodlights = LEDFader(FloodlightsPin);
 Adafruit_NeoPixel drivetrain = Adafruit_NeoPixel(DrivetrainLength, DrivetrainPin, NEO_RGB + NEO_KHZ800);
 NeoPatterns shuttleApproach = NeoPatterns(ShuttleApproachLength, ShuttleApproachPin, NEO_RGB + NEO_KHZ800, &shuttleApproachComplete);
 NeoPatterns fluxChillers = NeoPatterns(FluxChillersLength, FluxChillersPin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
+NeoPatterns fluxChillers2 = NeoPatterns(FluxChillersLength, FluxChillers2Pin, NEO_RGB + NEO_KHZ800, &fluxChillersComplete);
 
 // Controllers for “logical” subcomponents of the drivetrain and shuttle approach.
 NeoPixel_Animator impulseCrystal = NeoPixel_Animator(drivetrain, ImpulseCrystalPixel, 1, &impulseCrystalComplete);
@@ -96,8 +98,14 @@ void setup ()
   navigationMarkers.off();
   floodlights.set_value(0);
   floodlights.set_curve(Curve::exponential);
-  fluxChillers.begin();
   fluxChillers.ColorSet(drivetrainBlack);
+  fluxChillers.ColorSet(drivetrainBlack);
+  fluxChillers.begin();
+  floodlights2.set_value(0);
+  floodlights2.set_curve(Curve::exponential);
+  fluxChillers2.begin();
+  // fluxChillers.setBrightness(127);
+  fluxChillers2.ColorSet(drivetrainBlack);
   shuttleApproach.begin();
   shuttleApproach.Reverse();
   shuttleApproach.ColorSet(drivetrainBlack);
@@ -121,6 +129,7 @@ void loop ()
   impulseExhausts.Update();
   deflectorDish.Update();
   fluxChillers.Update();
+  fluxChillers2.Update();
   shuttleApproach.Update();
   drivetrain.show();
 }  // end of loop
@@ -214,6 +223,8 @@ void transitionToStandby()
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), impulseWhite, 155, 10, FORWARD);
   fluxChillers.OnComplete = &disengageWarpDriveComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 80, 10, FORWARD);
+  fluxChillers2.OnComplete = &disengageWarpDriveComplete;
+  fluxChillers2.Fade(fluxChillers2.getPixelColor(0), fluxChilllerViolet, 80, 10, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), impulseWhite, 155, 10, FORWARD);
 }
@@ -222,6 +233,8 @@ void disengageWarpDriveComplete()
 {
   fluxChillers.OnComplete = &fluxChillersComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 80, 10, FORWARD);
+  fluxChillers2.OnComplete = &fluxChillersComplete;
+  fluxChillers2.Fade(fluxChillers.getPixelColor(0), drivetrainBlack, 80, 10, FORWARD);
   floodlights.fade(250, 1200);
   shuttleApproach.OnComplete = NULL;
   shuttleApproach.ShuttleApproach(120);
@@ -243,7 +256,9 @@ void transitionToWarpPower()
   Serial.println("\"Warp speed at your command.\"");
   floodlights.fade(0, 750);
   fluxChillers.OnComplete = &engageWarpIntermixStage0Complete;
-  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 75, 10, FORWARD);
+  fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChilllerViolet, 155, 10, FORWARD);
+  fluxChillers2.OnComplete = &engageWarpIntermixStage0Complete;
+  fluxChillers2.Fade(fluxChillers2.getPixelColor(0), fluxChilllerViolet, 155, 10, FORWARD);
   impulseCrystal.Fade(drivetrain.getPixelColor(ImpulseCrystalPixel), warpBlue, 225, 10, FORWARD);
   deflectorDish.Fade(drivetrain.getPixelColor(DeflectorDishPixel), warpBlue, 225, 10, FORWARD);
   impulseExhausts.Fade(drivetrain.getPixelColor(ImpulseExhaustsPixel), drivetrainBlack, 75, 10, FORWARD);
@@ -253,23 +268,30 @@ void engageWarpIntermixStage0Complete()
 {
   fluxChillers.OnComplete = &engageWarpIntermixStage1Complete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
+  fluxChillers2.OnComplete = &engageWarpIntermixStage1Complete;
+  fluxChillers2.Fade(fluxChillers2.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
 }
 
 void engageWarpIntermixStage1Complete()
 {
   fluxChillers.OnComplete = &engageWarpIntermixStage2Complete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
+  fluxChillers2.OnComplete = &engageWarpIntermixStage2Complete;
+  fluxChillers2.Fade(fluxChillers2.getPixelColor(0), fluxChillers.Color(255,255,255), 25, 5, FORWARD);
 }
 
 void engageWarpIntermixStage2Complete()
 {
   fluxChillers.OnComplete = &fluxChillersComplete;
   fluxChillers.Fade(fluxChillers.getPixelColor(0), warpBlue, 75, 5, FORWARD);
+  fluxChillers2.OnComplete = &fluxChillersComplete;
+  fluxChillers2.Fade(fluxChillers2.getPixelColor(0), warpBlue, 75, 5, FORWARD);
 }
 
 void fluxChillersComplete()
 {
   fluxChillers.ActivePattern = NONE;
+  fluxChillers2.ActivePattern = NONE;
 };
 
 void shuttleApproachComplete()
