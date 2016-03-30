@@ -160,7 +160,7 @@ void NeoPatterns::ShuttleApproach(uint8_t interval)
     Interval = interval;
     TotalSteps = (numPixels() / 2);
     Color1 = Color(25, 25, 25);
-    Index = 0;
+    Index = numPixels();
 }
 
 bool isvalueinarray(int val, int *arr, int size){
@@ -174,16 +174,6 @@ bool isvalueinarray(int val, int *arr, int size){
 // Update the ShuttleApproach Pattern
 void NeoPatterns::ShuttleApproachUpdate()
 {
-  // Corner marker flashers
-  int markers[] = { 0, 31, 15, 16 };
-  if (!isvalueinarray(Index, markers, 32)){
-    if (Index % 5 == 0) {
-      setPixelColor(markers[0], Wheel(20)); // green
-      setPixelColor(markers[1], Wheel(20));
-      setPixelColor(markers[2], Wheel(60)); // orange
-      setPixelColor(markers[3], Wheel(60));
-    }
-  }
   // Front->back chasers
   for (int i = 0; i < numPixels(); i++)
   {
@@ -199,6 +189,18 @@ void NeoPatterns::ShuttleApproachUpdate()
            setPixelColor(j, DimColor(getPixelColor(j)));
       }
   }
+
+  // Corner marker flashers
+  int markers[] = { 0, 31, 15, 16 };
+  if (!isvalueinarray(Index, markers, 32)){
+    if (Index % 5 == 0) {
+      setPixelColor(markers[0], Wheel(20)); // green
+      setPixelColor(markers[1], Wheel(20));
+      setPixelColor(markers[2], Wheel(60)); // orange
+      setPixelColor(markers[3], Wheel(60));
+    }
+  }
+
   show();
   Increment();
 }
@@ -233,7 +235,8 @@ void NeoPatterns::FadeUpdate()
 uint32_t NeoPatterns::DimColor(uint32_t color)
 {
     // Shift R, G and B components one bit to the right
-    uint32_t dimColor = Color(Red(color) >> 1, Green(color) >> 1, Blue(color) >> 1);
+    float frankieFactor = 0.65;
+    uint32_t dimColor = Color(Red(color) * frankieFactor, Green(color) * frankieFactor, Blue(color) * frankieFactor);
     return dimColor;
 }
 
