@@ -17,9 +17,9 @@
 const byte FloodlightsPin = 11;    // Needs PWM connected to MOSFET
 const byte StrobesPin = 10;        // Needs PWM connected to MOSFET
 const byte NavigationPin = 9;      // Needs PWM connected to MOSFET
-const byte FluxChillersPin = 5;    // Digital IO pin connected to NeoPixels.
-const byte FluxChillers2Pin = 5;    // Digital IO pin connected to NeoPixels.
-const byte ShuttleApproachPin = 4; // Digital IO pin connected to NeoPixels.
+const byte FluxChillersPin = 6;    // Digital IO pin connected to NeoPixels.
+const byte FluxChillers2Pin = 4;    // Digital IO pin connected to NeoPixels.
+const byte ShuttleApproachPin = 5; // Digital IO pin connected to NeoPixels.
 const byte DrivetrainPin = 3;      // Digital IO pin connected to NeoPixels.
 const byte ButtonPin = 2;          //
 
